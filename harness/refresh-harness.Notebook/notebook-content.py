@@ -670,12 +670,12 @@ def model_size(cap, dataset_id, logs, ref):
         if len(backup):
             where = "XMLA trace" if cap in TRACED else "SemanticModelLogs"
             return round(float(backup["Rows"].max()) / 1048576, 1), f"Backup step in {where}"
-    if ref["result"] == "refreshed":
+    if ref["result"] == "refreshed" and cap not in STANDARD_REFRESH:   # Pro has no XMLA endpoint
         try:
             return round(labs.get_semantic_model_size(dataset=dataset_id, workspace=WORKSPACES[cap]) / 1048576, 1), \
                 "INFO.STORAGETABLECOLUMNSEGMENTS + dictionaries (DAX)"
         except Exception as e:
-            note(f"{cap}: model size query failed: {e}")
+            note(f"{cap}: model size query failed: {type(e).__name__}")
     return None, ""
 
 
