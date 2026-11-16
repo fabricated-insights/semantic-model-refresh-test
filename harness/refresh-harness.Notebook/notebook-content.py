@@ -221,7 +221,13 @@ def sync_workspace(cap):
         raise HarnessStop(f"{cap}: workspace has uncommitted changes or conflicts. Commit or undo them in "
                           f"Source control first. Nothing was updated.\n" + "\n".join(lines))
 
-    if head != remote:
+    incoming = [c for c in changes if c.get("remoteChange") not in (None, "None")]
+    if head != remote and not incoming:
+        # Newer commits touch nothing in this workspace's Git folder: the items already match.
+        # Skip the update, which would only move the head (PPU refused even that with
+        # WorkspaceMigrationOperationInProgress for hours after a reconnect).
+        note(f"{cap}: workspace at {head}, remote {remote} has no changes for its items; no update needed")
+    elif head != remote:
         note(f"{cap}: update from Git {head} -> {remote}")
         body = {
             "remoteCommitHash": remote,
