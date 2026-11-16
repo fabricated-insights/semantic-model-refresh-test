@@ -18,6 +18,7 @@ Auth: the signed-in az CLI user. No secrets anywhere.
 Python standard library only.
 """
 import argparse
+import base64
 import csv
 import datetime as dt
 import json
@@ -34,7 +35,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 REMOTE = "semantic-model-refresh"
 BRANCH = "main"
-WORKSPACES = {"F2": "58b05b2a-00d2-45df-9034-0a044bb3d162", "F64": "d3119fe5-cd57-4366-b671-89a3ad82aed5"}   # recreated 2026-11-11
+WORKSPACES = {"F2": "58b05b2a-00d2-45df-9034-0a044bb3d162", "F64": "d3119fe5-cd57-4366-b671-89a3ad82aed5",   # F64 recreated 2026-11-11
+              "Pro": "d139f636-19c2-47c3-af6e-e3f1ec50c45f"}
+DEPLOYED_BY_API = {"Pro"}   # not connected to Git: the committed model is deployed through the Fabric item API before the run
 HARNESS_WS = WORKSPACES["F64"]
 NOTEBOOK = "refresh-harness"
 LAKEHOUSE = "harness_lake"
@@ -186,6 +189,30 @@ def item_id(ws, item_type, name):
     if len(hits) != 1:
         sys.exit(f"{item_type} {name} found {len(hits)} times in {ws}")
     return hits[0]
+
+
+def deploy_model(cap, variant):
+    """Create or update the semantic model in a workspace without Git, from the committed TMDL (HEAD)."""
+    ws = WORKSPACES[cap]
+    root = f"models/{variant}/{variant}.SemanticModel"
+    files = [f for f in git("ls-tree", "-r", "--name-only", "HEAD", root).splitlines()
+             if not f.startswith(root + "/.pbi/") and f not in (root + "/.platform", root + "/diagramLayout.json")]
+    if not files:
+        sys.exit(f"{root} is not in HEAD")
+    parts = []
+    for f in files:
+        data = subprocess.run(["git", "show", f"HEAD:{f}"], cwd=ROOT, capture_output=True, check=True).stdout
+        parts.append({"path": f[len(root) + 1:], "payload": base64.b64encode(data).decode(), "payloadType": "InlineBase64"})
+    _, _, out = fabric("GET", f"/workspaces/{ws}/semanticModels")
+    hits = [m["id"] for m in out.get("value", []) if m["displayName"] == variant]
+    if len(hits) > 1:
+        sys.exit(f"{cap}: semantic model {variant} found {len(hits)} times; remove the extra one by hand first")
+    if hits:
+        fabric("POST", f"/workspaces/{ws}/semanticModels/{hits[0]}/updateDefinition", {"definition": {"parts": parts}}, lro=True)
+        print(f"{cap}: updated {variant} from HEAD ({len(parts)} files)")
+    else:
+        fabric("POST", f"/workspaces/{ws}/semanticModels", {"displayName": variant, "definition": {"parts": parts}}, lro=True)
+        print(f"{cap}: created {variant} from HEAD ({len(parts)} files)")
 
 
 def run_notebook(params):
@@ -360,6 +387,10 @@ def main():
     if args.task == "refresh":
         warn_before_10m(args.variant, data_tag, targets)
     sync_harness_workspace(commit)
+    if args.task == "refresh":
+        for cap in targets:
+            if cap in DEPLOYED_BY_API:
+                deploy_model(cap, args.variant)
 
     run_id = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + args.variant.split("-")[0] + "-" + uuid.uuid4().hex[:4]
     params = {"variant": args.variant, "data_tag": data_tag, "targets": ",".join(targets),
