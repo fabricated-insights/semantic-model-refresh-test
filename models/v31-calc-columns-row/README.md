@@ -63,3 +63,9 @@ Every model was refreshed on Premium Per User (PPU) and on a Pro workspace in on
 | Pro | 1M | refreshed |  |  | 1.2 min |  |  |
 
 Runs: `results/harness/20261117T142951Z-v31-a73e/`.
+
+## F2 and F64 gap pass (2026-11-18)
+
+Refreshed on F2 with the 1M data in 2.1 min. In memory after refresh: 316.8 MB. F2 has no workspace monitoring, so there is no peak; the F64 and PPU peaks are well below the F2 limit of about 3,066 MB, as finding 9 predicts.
+
+Run: `results/harness/20261118T132724Z-v31-549c/`.

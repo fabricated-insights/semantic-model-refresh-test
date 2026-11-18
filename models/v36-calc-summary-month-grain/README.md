@@ -51,3 +51,9 @@ Every model was refreshed on Premium Per User (PPU) and on a Pro workspace in on
 Pro error (10M): "Unable to save the changes since the new dataset of size 1099 MB exceeds the limit of 1024 MB."
 
 Runs: `results/harness/20261117T102022Z-v36-79c8/`.
+
+## F2 and F64 gap pass (2026-11-18)
+
+Failed on F2 with the 10M data after 11 min (resource governance). The service retried the refresh and gave up: "Retry attempts for failures while executing the refresh exceeded the retry limit set on the request." Each attempt stopped at a consumed memory of 3,066 MB or a little more, against a limit of 3,066 MB. The peak on F64 and PPU is far above that, as finding 9 predicts.
+
+Run: `results/harness/20261118T144029Z-v36-29aa/`.

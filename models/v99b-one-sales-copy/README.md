@@ -33,3 +33,9 @@ Every model was refreshed on Premium Per User (PPU) and on a Pro workspace in on
 | Pro | 1M | refreshed |  |  | 16 min |  |  |
 
 Runs: `results/harness/20261117T174715Z-v99b-b75f/`.
+
+## F2 and F64 gap pass (2026-11-18)
+
+Failed on F64 after 5.3 min (resource governance), at a peak of 25,592 MB, of which Power Query 25,524 MB, against the limit of 25,592 MB. "Retry attempts for failures while executing the refresh exceeded the retry limit set on the request." On PPU the same model refreshed with a peak just above the F64 limit, so the F64 failure is what that peak predicts.
+
+Run: `results/harness/20261118T134858Z-v99b-c934/`.

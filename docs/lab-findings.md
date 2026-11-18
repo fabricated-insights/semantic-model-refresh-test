@@ -98,8 +98,10 @@ v19 builds five analysis tables in Power Query from the 10M data (merges, Group 
 
 For every model run on both F64 and F2, the F64 peak sorted it correctly against the F2 limit of about 3,066 MB:
 
-- Below the limit, refreshed on F2: v00 (785), v18 (1,562), v22 (686), v23 (1,405), v99m (627), v99n (624), v99p (746).
-- Above the limit, failed on F2: v99q (3,477), v21 (3,767), v20 (5,229), v99o (5,337), v99l (12,878), v99k (12,992), v99a (16,054).
+- Below the limit, refreshed on F2: v30 (550), v24 (608), v25 (614), v33 (619), v99n (624), v99m (627), v32 (631), v29 (665 to 1,735), v22 (686), v34 (707), v99p (746), v28 (777), v00 (785), v31 (913), v24a (933), v24b (1,102), v23 (1,405), v18 (1,562), v00 on 10M (2,040).
+- Above the limit, failed on F2: v99q (3,477), v21 (3,767), v20 (5,229), v99o (5,337), v99l (12,878), v99k (12,992), v35 on 10M (13,063), v36 on 10M (14,759), v99a (16,054).
+
+The twelve 1M models from v24 to v34 and the two 10M models v35 and v36 were run on F2 on 2026-11-18 to test this. All fourteen came out as their F64 peak predicted.
 
 This gives a practical method: refresh once on a capacity with monitoring, read the peak, and compare it with the per model limit of the target SKU.
 
@@ -138,25 +140,25 @@ One row per model and data size. F2 and F64 are from the runs in "All runs" belo
 | v22-dax-calc-columns | 1M | refreshed | refreshed, 686 | refreshed, 621 | refreshed |
 | v23-dax-calc-tables | 1M | refreshed | refreshed, 1,405 | refreshed, 1,405 | refreshed |
 | v23-dax-calc-tables | 10M | not run | refreshed, 13,062 | refreshed, 13,315 | failed, model 1,094 MB over 1 GB |
-| v24-bidirectional | 1M | not run | refreshed, 608 | refreshed, 551 | refreshed |
-| v24a-second-fact | 1M | not run | refreshed, 933 | refreshed, 857 | refreshed |
-| v24b-second-fact-bidirectional | 1M | not run | refreshed, 1,102 | refreshed, 1,432 | refreshed |
-| v25-many-to-many | 1M | not run | refreshed, 614 | refreshed, 695 | refreshed |
+| v24-bidirectional | 1M | refreshed | refreshed, 608 | refreshed, 551 | refreshed |
+| v24a-second-fact | 1M | refreshed | refreshed, 933 | refreshed, 857 | refreshed |
+| v24b-second-fact-bidirectional | 1M | refreshed | refreshed, 1,102 | refreshed, 1,432 | refreshed |
+| v25-many-to-many | 1M | refreshed | refreshed, 614 | refreshed, 695 | refreshed |
 | v26-bad-dax | 1M | refreshed | refreshed, 715 | refreshed, 614 | refreshed |
-| v27-high-cardinality-visuals | 1M | not run | refreshed, 616 | refreshed, 747 | refreshed |
-| v28-types-all-text | 1M | not run | refreshed, 777 | refreshed, 687 | refreshed |
-| v29-keys-as-text | 1M | not run | refreshed, 665 to 1,735 | refreshed, 642 | refreshed |
-| v30-double-instead-of-fixed | 1M | not run | refreshed, 550 | refreshed, 607 | refreshed |
-| v31-calc-columns-row | 1M | not run | refreshed, 913 | refreshed, 849 | refreshed |
-| v32-calc-columns-aggregate | 1M | not run | refreshed, 631 | refreshed, 928 | refreshed |
-| v33-auto-date-time | 1M | not run | refreshed, 619 | refreshed, 1,952 | refreshed |
-| v34-auto-date-time-no-date-table | 1M | not run | refreshed, 707 | refreshed, 620 | refreshed |
-| v35-calc-tables-four-copies | 10M | not run | refreshed, 13,063 | refreshed, 9,737 | failed, model 2,192 MB over 1 GB |
-| v36-calc-summary-month-grain | 10M | not run | refreshed, 14,759 | refreshed, 14,929 | failed, model 1,099 MB over 1 GB |
+| v27-high-cardinality-visuals | 1M | refreshed | refreshed, 616 | refreshed, 747 | refreshed |
+| v28-types-all-text | 1M | refreshed | refreshed, 777 | refreshed, 687 | refreshed |
+| v29-keys-as-text | 1M | refreshed | refreshed, 665 to 1,735 | refreshed, 642 | refreshed |
+| v30-double-instead-of-fixed | 1M | refreshed | refreshed, 550 | refreshed, 607 | refreshed |
+| v31-calc-columns-row | 1M | refreshed | refreshed, 913 | refreshed, 849 | refreshed |
+| v32-calc-columns-aggregate | 1M | refreshed | refreshed, 631 | refreshed, 928 | refreshed |
+| v33-auto-date-time | 1M | refreshed | refreshed, 619 | refreshed, 1,952 | refreshed |
+| v34-auto-date-time-no-date-table | 1M | refreshed | refreshed, 707 | refreshed, 620 | refreshed |
+| v35-calc-tables-four-copies | 10M | failed at 3,066 | refreshed, 13,063 | refreshed, 9,737 | failed, model 2,192 MB over 1 GB |
+| v36-calc-summary-month-grain | 10M | failed at 3,066 | refreshed, 14,759 | refreshed, 14,929 | failed, model 1,099 MB over 1 GB |
 | v99-kitchen-sink | 1M | failed at 3,319 | failed at 25.6 GB | refreshed, 25,882 | refreshed |
 | v99a-no-big-calc-tables | 1M | failed at 3,099 | refreshed, 16,054 | refreshed, 16,045 | refreshed |
-| v99b-one-sales-copy | 1M | not run | not run | refreshed, 25,684 | refreshed |
-| v99c-crossjoin-only | 1M | not run | not run | refreshed, 25,918 | refreshed |
+| v99b-one-sales-copy | 1M | not run | failed at 25.6 GB | refreshed, 25,684 | refreshed |
+| v99c-crossjoin-only | 1M | not run | failed at 25.6 GB | refreshed, 25,918 | refreshed |
 | v99d-power-query | 1M | not run | refreshed, 16,010 | refreshed, 16,132 | refreshed |
 | v99e-sales-flat | 1M | not run | refreshed, 22,889 | refreshed, 23,382 | refreshed |
 | v99f-calc-tables | 1M | not run | refreshed, 22,752 | refreshed, 22,870 | refreshed |
@@ -175,7 +177,7 @@ One row per model and data size. F2 and F64 are from the runs in "All runs" belo
 Read across a row:
 
 - The F2 result follows the peak: every model whose peak is below about 3 GB refreshed on F2, every one above it that was tried failed (finding 9). The PPU peaks of this pass sort them the same way.
-- F64 fails v19 (Power Query limit) and three v99 models, which peak at 25,651 to 25,939 MB on PPU in this pass, just above its 25,593 MB limit. v99i peaked at 23,893 MB on PPU in an earlier run, so a single peak this close to the limit does not settle the result. v99b and v99c also peak above the limit on PPU (25,684 and 25,918 MB) but were not run on F64.
+- F64 fails v19 (Power Query limit) and five v99 models, which peak at 25,651 to 25,939 MB on PPU in this pass, just above its 25,593 MB limit. v99b and v99c were run on F64 after the PPU pass, on 2026-11-18, and failed there as their PPU peaks predicted. v99i peaked at 23,893 MB on PPU in an earlier run, so a single peak this close to the limit does not settle the result.
 - PPU refreshes everything except v19, which hits the Power Query limit per evaluation that no capacity raises.
 - Pro refreshes every 1M model, including all that fail on F2 and F64, and fails the 10M models whose saved model is over 1 GB (finding 11).
 - Peaks of the same model on F64 and PPU mostly agree within a few hundred MB, the normal spread between runs. A few differ by more, almost all of it in Power Query: v33 619 on F64 against 1,952 on PPU, v29 665 to 1,735 on F64 in three runs.
@@ -224,25 +226,25 @@ For v00 on 1M the service size is 73 MB, and a DAX query in the service over `IN
 | v22-dax-calc-columns | baseline plus 8 calculated columns | refreshed | 686 | 430 | refreshed twice | 101 MB |  | 72.5 MB |  |
 | v23-dax-calc-tables | baseline plus 4 calculated tables, 1M | refreshed | 1,405 | 399 | refreshed twice | 184 MB |  | 115.1 MB |  |
 | v23-dax-calc-tables | same, 10M | refreshed | 13,062 | 1,202 | not run | 1,833 MB | 1,379 MB |  |  |
-| v35-calc-tables-four-copies | v23 with four copies in Sales Copy, 10M | refreshed | 13,063 | 1,601 | not run |  | 2,803 MB |  |  |
-| v36-calc-summary-month-grain | v23 with Sales Summary by month, 10M | refreshed | 14,759 | 1,194 | not run |  | 1,406 MB |  |  |
-| v24-bidirectional | Sales to Customer filters in both directions | refreshed | 608 | 335 | not run | 73 MB |  | 49.2 MB |  |
-| v24a-second-fact | baseline plus a second fact table, Orders | refreshed | 933 | 911 | not run | 103 MB |  | 66.2 MB |  |
-| v24b-second-fact-bidirectional | v24a with Sales to Customer in both directions | refreshed | 1,102 | 1,003 | not run | 103 MB |  | 66.2 MB |  |
-| v25-many-to-many | baseline plus Customer Segment, many-to-many to Sales | refreshed | 614 | 457 | not run | 79 MB | 98.1 MB |  |  |
+| v35-calc-tables-four-copies | v23 with four copies in Sales Copy, 10M | refreshed | 13,063 | 1,601 | failed at 3,066 |  | 2,803 MB |  |  |
+| v36-calc-summary-month-grain | v23 with Sales Summary by month, 10M | refreshed | 14,759 | 1,194 | failed at 3,066 |  | 1,406 MB |  |  |
+| v24-bidirectional | Sales to Customer filters in both directions | refreshed | 608 | 335 | refreshed | 73 MB |  | 49.2 MB |  |
+| v24a-second-fact | baseline plus a second fact table, Orders | refreshed | 933 | 911 | refreshed | 103 MB |  | 66.2 MB |  |
+| v24b-second-fact-bidirectional | v24a with Sales to Customer in both directions | refreshed | 1,102 | 1,003 | refreshed | 103 MB |  | 66.2 MB |  |
+| v25-many-to-many | baseline plus Customer Segment, many-to-many to Sales | refreshed | 614 | 457 | refreshed | 79 MB | 98.1 MB |  |  |
 | v26-bad-dax | five measures in common bad DAX patterns | refreshed | 715 | 689 | refreshed | 73 MB | 92.7 MB on F2 | 49.2 MB |  |
-| v27-high-cardinality-visuals | baseline model, report page with high-cardinality visuals | refreshed | 616 | 336 | not run | 73 MB |  | 49.2 MB |  |
-| v28-types-all-text | almost every column loaded as text | refreshed | 777 | 629 | not run | 69 MB | 171.5 MB |  |  |
-| v29-keys-as-text | key columns as text | refreshed | 665 to 1,735 (3 runs) | 398 to 1,720 | not run | 69 MB | 141.9 MB |  |  |
-| v30-double-instead-of-fixed | prices and costs as decimal number instead of fixed decimal | refreshed | 550 | 270 | not run | 73 MB | 92.9 MB |  |  |
-| v31-calc-columns-row | 32 row-level calculated columns on Sales | refreshed | 913 | 334 | not run | 223 MB | 316.8 MB |  | 233.5 MB (file) |
-| v32-calc-columns-aggregate | 30 aggregating calculated columns | refreshed | 631 | 595 | not run | 221 MB | 367.9 MB |  |  |
-| v33-auto-date-time | Auto date/time on, Date table marked | refreshed | 619 | 423 | not run | 74 MB | 96.2 MB |  |  |
-| v34-auto-date-time-no-date-table | Auto date/time on, Date table not marked | refreshed | 707 | 421 | not run | 74 MB | 96.9 MB |  |  |
+| v27-high-cardinality-visuals | baseline model, report page with high-cardinality visuals | refreshed | 616 | 336 | refreshed | 73 MB |  | 49.2 MB |  |
+| v28-types-all-text | almost every column loaded as text | refreshed | 777 | 629 | refreshed | 69 MB | 171.5 MB |  |  |
+| v29-keys-as-text | key columns as text | refreshed | 665 to 1,735 (3 runs) | 398 to 1,720 | refreshed | 69 MB | 141.9 MB |  |  |
+| v30-double-instead-of-fixed | prices and costs as decimal number instead of fixed decimal | refreshed | 550 | 270 | refreshed | 73 MB | 92.9 MB |  |  |
+| v31-calc-columns-row | 32 row-level calculated columns on Sales | refreshed | 913 | 334 | refreshed | 223 MB | 316.8 MB |  | 233.5 MB (file) |
+| v32-calc-columns-aggregate | 30 aggregating calculated columns | refreshed | 631 | 595 | refreshed | 221 MB | 367.9 MB |  |  |
+| v33-auto-date-time | Auto date/time on, Date table marked | refreshed | 619 | 423 | refreshed | 74 MB | 96.2 MB |  |  |
+| v34-auto-date-time-no-date-table | Auto date/time on, Date table not marked | refreshed | 707 | 421 | refreshed | 74 MB | 96.9 MB |  |  |
 | v99-kitchen-sink | everything | failed at 25.6 GB (PPU: refreshed, peak 26,115) |  | 25,958 on PPU | failed at 3,319 | 622 MB on PPU |  | 448.3 MB on PPU (Pro run: 447.6 MB) | 626.4 MB (file, PPU) |
 | v99a | v99 without big calculated tables and flat table | refreshed | 16,054 | 15,932 | failed at 3,099 | 185 MB |  | 134.7 MB |  |
-| v99b | v99 with one Sales copy and an empty Product Date Grid | not run (PPU: refreshed, peak 25,684) |  | 25,591 on PPU | not run | 517 MB on PPU | 640.6 MB on PPU |  |  |
-| v99c | v99 with the Product x Date crossjoin and an empty Sales Copy | not run (PPU: refreshed, peak 25,918) |  | 25,808 on PPU | not run | 358 MB on PPU | 486.6 MB on PPU |  |  |
+| v99b | v99 with one Sales copy and an empty Product Date Grid | failed at 25.6 GB (PPU: refreshed, peak 25,684) |  | 25,591 on PPU | not run | 517 MB on PPU | 640.6 MB on PPU |  |  |
+| v99c | v99 with the Product x Date crossjoin and an empty Sales Copy | failed at 25.6 GB (PPU: refreshed, peak 25,918) |  | 25,808 on PPU | not run | 358 MB on PPU | 486.6 MB on PPU |  |  |
 | v99d | v99a plus an unused heavy query | refreshed | 16,010 | 15,925 | not run | 185 MB |  | 134.7 MB |  |
 | v99e | v99d plus the flat table loaded | refreshed | 22,889 | 22,766 | not run | 323 MB |  | 233.4 MB |  |
 | v99f | v99e plus three calculated tables | refreshed | 22,752 | 22,600 | not run | 361 MB |  | 248.2 MB |  |
