@@ -49,3 +49,14 @@ What the Orders page shows (checked with DAX on 2026-11-10):
 | Computers and Germany | 111,258 |
 
 The Category slicer does not filter Orders, because Product has no relationship path to Orders. The Country slicer does, through Customer. This is what single-direction relationships give, and the report shows it without any warning.
+
+## PPU and Pro, full pass (2026-11-16 to 18)
+
+Every model was refreshed on Premium Per User (PPU) and on a Pro workspace in one pass, through the harness, with the data in its committed files. PPU numbers are from an XMLA trace of the refresh. Pro gives only the result and the duration: it has no XMLA endpoint and no workspace monitoring.
+
+| Capacity | Data | Result | Peak MB | Power Query MB | Duration | Model size | In memory after refresh |
+|---|---|---|---|---|---|---|---|
+| PPU | 1M | refreshed | 857 | 765 | 1.6 min | 103 MB | 110.0 MB |
+| Pro | 1M | refreshed |  |  | 0.9 min |  |  |
+
+Runs: `results/harness/20261117T060102Z-v24a-53c5/`.

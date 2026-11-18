@@ -72,3 +72,14 @@ With a marked date table that the fact dates relate to, Auto date/time costs alm
 | 14 Nov 08:00 | 125 ms | 797 ms | 1,986 ms | 08:20, slow (1,548 ms) |
 
 Query time on F64 has a fast and a slow state per model, about two times apart, that last for hours and change by themselves (`docs/lab-findings-queries.md`, finding 7). Memory per query does not change with it. v33 was in the slow state while v00 was fast, and in the fast state while v00 was slow. So the query times do not show an effect of Auto date/time; they cover both states of the baseline.
+
+## PPU and Pro, full pass (2026-11-16 to 18)
+
+Every model was refreshed on Premium Per User (PPU) and on a Pro workspace in one pass, through the harness, with the data in its committed files. PPU numbers are from an XMLA trace of the refresh. Pro gives only the result and the duration: it has no XMLA endpoint and no workspace monitoring.
+
+| Capacity | Data | Result | Peak MB | Power Query MB | Duration | Model size | In memory after refresh |
+|---|---|---|---|---|---|---|---|
+| PPU | 1M | refreshed | 1,952 | 1,913 | 1.8 min | 74 MB | 96.2 MB |
+| Pro | 1M | refreshed |  |  | 0.8 min |  |  |
+
+Runs: `results/harness/20261117T143608Z-v33-fca3/`.

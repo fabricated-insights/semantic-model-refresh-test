@@ -38,3 +38,16 @@ F64, 10M, 2026-11-13, harness run `20261113T132605Z-v36-6c53`:
 By month `Sales Summary` gets about 3M more rows than by year (rows loaded 78.9M against 75.9M; by year it has 16.5M), about 18 % more: most customers buy in only a few months of a year. The peak rose by 1.7 GB, 13 %. v35 added 69M rows to `Sales Copy` and the peak did not move. So the peak follows `Sales Summary`, the `SUMMARIZECOLUMNS` with three measures, not the size of the model or of the largest table.
 
 It still fits F64 (58 % of the 25.6 GB limit), so it was not run on PPU.
+
+## PPU and Pro, full pass (2026-11-16 to 18)
+
+Every model was refreshed on Premium Per User (PPU) and on a Pro workspace in one pass, through the harness, with the data in its committed files. PPU numbers are from an XMLA trace of the refresh. Pro gives only the result and the duration: it has no XMLA endpoint and no workspace monitoring.
+
+| Capacity | Data | Result | Peak MB | Power Query MB | Duration | Model size | In memory after refresh |
+|---|---|---|---|---|---|---|---|
+| PPU | 10M | refreshed | 14,929 | 1,723 | 16 min | 1,827 MB | 1,408.2 MB |
+| Pro | 10M | failed, model 1099 MB over the 1024 MB limit |  |  | 11 min |  |  |
+
+Pro error (10M): "Unable to save the changes since the new dataset of size 1099 MB exceeds the limit of 1024 MB."
+
+Runs: `results/harness/20261117T102022Z-v36-79c8/`.

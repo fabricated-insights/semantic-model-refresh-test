@@ -22,3 +22,14 @@ A knob of 0 copies or a first year of 2099 leaves the table in the model with ze
 - If A fails on F64 by itself, the main cost is somewhere else in v99.
 
 Same Desktop steps as v99 before publishing: refresh once so the calculated tables get their columns, and toggle auto date/time off and on.
+
+## PPU and Pro, full pass (2026-11-16 to 18)
+
+Every model was refreshed on Premium Per User (PPU) and on a Pro workspace in one pass, through the harness, with the data in its committed files. PPU numbers are from an XMLA trace of the refresh. Pro gives only the result and the duration: it has no XMLA endpoint and no workspace monitoring.
+
+| Capacity | Data | Result | Peak MB | Power Query MB | Duration | Model size | In memory after refresh |
+|---|---|---|---|---|---|---|---|
+| PPU | 1M | refreshed | 25,684 | 25,591 | 23 min | 517 MB | 640.6 MB |
+| Pro | 1M | refreshed |  |  | 16 min |  |  |
+
+Runs: `results/harness/20261117T174715Z-v99b-b75f/`.
