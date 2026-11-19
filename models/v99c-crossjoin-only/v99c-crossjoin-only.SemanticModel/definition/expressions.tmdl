@@ -4,7 +4,7 @@ expression DataTag = "data-1m-v1" meta [IsParameterQuery=true, List={"data-1m-v1
 
 	annotation PBI_ResultType = Text
 
-/// Where the data is loaded from: parquet (the files in the release, as measured so far), parquet-nobuffer (the same files without Binary.Buffer), csv (the same data as CSV files in the releases data-1m-csv and data-10m-csv) or sql (the lakehouse SQL endpoint on F64)
+/// Where the data is loaded from: parquet (the files in the release, as measured so far), parquet-nobuffer (the same files without Binary.Buffer), csv (the same data as CSV files in the releases data-1m-csv and data-10m-csv) or sql (the lakehouse lab_data on F64, through its SQL endpoint)
 expression SourceType = "parquet" meta [IsParameterQuery=true, List={"parquet", "parquet-nobuffer", "csv", "sql"}, DefaultValue="parquet", Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 8bee232b-f0c4-4743-9a80-741dbdb21ee2
 
@@ -17,7 +17,7 @@ expression SqlEndpoint = "vmxp7jph42futcd3awug4hd2s4-4wprdu2xzvtehntrrgr23avo2u.
 	annotation PBI_ResultType = Text
 
 /// Lakehouse that holds the data, used when SourceType is sql
-expression SqlDatabase = "harness_lake" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+expression SqlDatabase = "lab_data" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 81c936b8-d61e-4cb3-bd5e-b5aefcbe5ed1
 
 	annotation PBI_ResultType = Text
@@ -35,8 +35,8 @@ expression fnLoadParquet =
 		    UsedTag = DataTag,
 		    Source =
 		        if SourceType = "sql" then
-		            // Lakehouse SQL endpoint on F64: one table per file and data size, e.g. sales_1m.
-		            Sql.Database(SqlEndpoint, SqlDatabase){[Schema = "dbo", Item = Name & (if UsedTag = "data-10m-v1" then "_10m" else "_1m")]}[Data]
+		            // Lakehouse lab_data on F64 through its SQL endpoint: schema data_1m or data_10m, one table per file.
+		            Sql.Database(SqlEndpoint, SqlDatabase){[Schema = (if UsedTag = "data-10m-v1" then "data_10m" else "data_1m"), Item = Name]}[Data]
 		        else if SourceType = "csv" then
 		            // The same data as CSV, in the release data-1m-csv or data-10m-csv, typed as the Parquet files are.
 		            Table.TransformColumnTypes(
