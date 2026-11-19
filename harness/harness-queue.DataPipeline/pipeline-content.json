@@ -100,8 +100,14 @@
               "dependsOn": []
             },
             {
-              "name": "Cooldown",
               "type": "Wait",
+              "typeProperties": {
+                "waitTimeInSeconds": {
+                  "value": "@max(1, item().cooldown_seconds)",
+                  "type": "Expression"
+                }
+              },
+              "name": "Cooldown",
               "dependsOn": [
                 {
                   "activity": "refresh-harness",
@@ -109,13 +115,7 @@
                     "Completed"
                   ]
                 }
-              ],
-              "typeProperties": {
-                "waitTimeInSeconds": {
-                  "value": "@max(1, item().cooldown_seconds)",
-                  "type": "Expression"
-                }
-              }
+              ]
             }
           ]
         },
