@@ -75,7 +75,9 @@ The sizes task reads the storage statistics of every model as it is (data, dicti
 3. The pipeline runs the notebook once per variant, in order, with no retries. A failed or stopped run does not stop the next one. F2 and PPU are updated from Git by the notebook as before; Pro gets the model from the F64 workspace (`deploy_pro`).
 4. `python harness/run_queue.py status JOB_ID` shows the pipeline and the runs that finished. `python harness/run_queue.py collect JOB_ID` pulls the finished runs into the repo like the driver does. It can run while the queue is still going and only adds what is new.
 
-The results stay in `harness_lake` until collected (`refresh_runs` table, `Files/harness/runs/<run id>/`). One queue runs at a time: do not start a second queue, a driver run or a manual refresh of the same models while one is running, and do not push while it runs (the next entry would see a different commit and stop).
+The results stay in `harness_lake` until collected (`refresh_runs` table, `Files/harness/runs/<run id>/`). Queues can run side by side, one per capacity (for example one queue with `--targets F64`, one with `PPU` and one with `Pro`): each refreshes only in its own workspace, and the memory limits are per model. `run_queue.py start` refuses a queue for a capacity that already has one running, and a queue at another commit. Do not start a driver run or a manual refresh of the same models meanwhile, and do not push while a queue runs (the next entry would see a different commit and stop).
+
+`--repeats N` runs the whole list N times, round robin (all models, then all again), so the runs of one model are spread over the queue. F2 is in the first round only: further F2 runs are a separate decision. `--once v19-pq-heavy-10m` keeps a model to the first round, for a failure that repeats the same way. `--cooldown S` waits S seconds after each entry.
 
 To switch the source or the data size of a variant for a queue, change `SourceType` or `DataTag` in its TMDL and commit, as for 1M and 10M below. Never in the service.
 

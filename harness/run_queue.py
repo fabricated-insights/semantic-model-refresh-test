@@ -42,17 +42,18 @@ def committed_source_type(variant):
     return m.group(1) if m else "parquet"   # models from before the parameter load Parquet
 
 
-def build_queue(variants, targets, repeats, cooldown, clear_first):
+def build_queue(variants, targets, repeats, cooldown, clear_first, once=()):
     """Round robin: every variant once, then every variant again, so the repeats of one model are spread
     over the whole queue instead of running back to back. F2 is only in the first round: its result is
-    pass or fail, and more F2 runs wait for a decision after the first."""
+    pass or fail, and more F2 runs wait for a decision after the first. Variants in `once` (a failure
+    that repeats the same way, such as v19 on Pro) are only in the first round too."""
     tags = {v: (committed_data_tag(v), committed_source_type(v)) for v in variants}
     queue = []
     for rnd in range(1, repeats + 1):
         caps = [t for t in targets if rnd == 1 or t != "F2"]
         if not caps:
             break
-        for v in variants:
+        for v in (variants if rnd == 1 else [v for v in variants if v not in once]):
             queue.append({"variant": v, "targets": ",".join(caps), "data_tag": tags[v][0], "source_type": tags[v][1],
                           "clear_first": "true" if clear_first else "false",
                           "deploy_pro": "true" if "Pro" in caps else "false", "task": "refresh",
@@ -60,13 +61,38 @@ def build_queue(variants, targets, repeats, cooldown, clear_first):
     return queue
 
 
-def start(variants, targets, clear_first, repeats=1, cooldown=0):
-    for v in variants:
+def running_queues():
+    """Queues started from this repo that are still running: [(job id, record, targets)]."""
+    out = []
+    for f in sorted(QUEUES.glob("*.json")) if QUEUES.is_dir() else []:
+        rec = json.loads(f.read_text(encoding="utf-8"))
+        if rec.get("finished"):
+            continue
+        st = job(rec["job_id"]).get("status")
+        if st in ("NotStarted", "InProgress"):
+            caps = {t for q in rec["queue"] for t in q["targets"].split(",")}
+            out.append((rec["job_id"], rec, caps))
+        else:
+            rec["finished"] = st
+            f.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+    return out
+
+
+def start(variants, targets, clear_first, repeats=1, cooldown=0, once=()):
+    for v in list(variants) + list(once):
         if not (ROOT / "models" / v).is_dir():
             sys.exit(f"models/{v} does not exist")
     targets = [t.strip() for t in targets.split(",") if t.strip()]
     commit = check_pushed()
-    queue = build_queue(variants, targets, repeats, cooldown, clear_first)
+    # Queues may run side by side, one per capacity. Two on the same capacity would refresh the same model
+    # twice at once, and a queue at another commit would have its workspaces moved under it.
+    for jid, rec, caps in running_queues():
+        if caps & set(targets):
+            sys.exit(f"Queue {jid} is still running on {', '.join(sorted(caps & set(targets)))}. Wait for it.")
+        if rec["commit"] != commit:
+            sys.exit(f"Queue {jid} is running at {rec['commit'][:7]}, HEAD is {commit[:7]}. "
+                     f"A queue at another commit would update the workspaces under it. Wait for it.")
+    queue = build_queue(variants, targets, repeats, cooldown, clear_first, set(once))
     for v in variants:
         q = next(e for e in queue if e["variant"] == v)
         print(f"  {v}: DataTag {q['data_tag']}, SourceType {q['source_type']}")
@@ -153,11 +179,13 @@ def main():
     s.add_argument("--repeats", type=int, default=1,
                    help="rounds over the whole list (round robin); F2 is only in the first round")
     s.add_argument("--cooldown", type=int, default=0, help="seconds to wait after each entry")
+    s.add_argument("--once", default="", help="comma separated variants that run in the first round only")
     for name in ("status", "collect"):
         sub.add_parser(name).add_argument("job_id")
     a = ap.parse_args()
     if a.cmd == "start":
-        start(a.variants, a.targets, a.clear_first, a.repeats, a.cooldown)
+        once = [v.strip() for v in a.once.split(",") if v.strip()]
+        start(a.variants, a.targets, a.clear_first, a.repeats, a.cooldown, once)
     elif a.cmd == "status":
         status(a.job_id)
     else:
