@@ -1,0 +1,18 @@
+{
+  "job_id": "e02a8497-5741-4d45-9d57-4bb980f11988",
+  "commit": "f20fbcf1c0f30239000712aeb1056d5b8bcf2fa1",
+  "started_utc": "2026-11-19T21:37:34+00:00",
+  "queue": [
+    {
+      "variant": "v00-baseline",
+      "targets": "F2",
+      "data_tag": "data-1m-v1",
+      "source_type": "parquet",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    }
+  ]
+}
