@@ -42,17 +42,38 @@ def committed_source_type(variant):
     return m.group(1) if m else "parquet"   # models from before the parameter load Parquet
 
 
-def start(variants, targets, clear_first):
+def build_queue(variants, targets, repeats, cooldown, clear_first):
+    """Round robin: every variant once, then every variant again, so the repeats of one model are spread
+    over the whole queue instead of running back to back. F2 is only in the first round: its result is
+    pass or fail, and more F2 runs wait for a decision after the first."""
+    tags = {v: (committed_data_tag(v), committed_source_type(v)) for v in variants}
+    queue = []
+    for rnd in range(1, repeats + 1):
+        caps = [t for t in targets if rnd == 1 or t != "F2"]
+        if not caps:
+            break
+        for v in variants:
+            queue.append({"variant": v, "targets": ",".join(caps), "data_tag": tags[v][0], "source_type": tags[v][1],
+                          "clear_first": "true" if clear_first else "false",
+                          "deploy_pro": "true" if "Pro" in caps else "false", "task": "refresh",
+                          "cooldown_seconds": cooldown, "round": rnd})
+    return queue
+
+
+def start(variants, targets, clear_first, repeats=1, cooldown=0):
     for v in variants:
         if not (ROOT / "models" / v).is_dir():
             sys.exit(f"models/{v} does not exist")
+    targets = [t.strip() for t in targets.split(",") if t.strip()]
     commit = check_pushed()
-    queue = [{"variant": v, "targets": targets, "data_tag": committed_data_tag(v),
-              "source_type": committed_source_type(v), "clear_first": "true" if clear_first else "false",
-              "deploy_pro": "true" if "Pro" in targets.split(",") else "false", "task": "refresh"}
-             for v in variants]
-    for q in queue:
-        print(f"  {q['variant']}: DataTag {q['data_tag']}, SourceType {q['source_type']}, targets {targets}")
+    queue = build_queue(variants, targets, repeats, cooldown, clear_first)
+    for v in variants:
+        q = next(e for e in queue if e["variant"] == v)
+        print(f"  {v}: DataTag {q['data_tag']}, SourceType {q['source_type']}")
+    for rnd in sorted({q["round"] for q in queue}):
+        print(f"  round {rnd}: {sum(1 for q in queue if q['round'] == rnd)} entries, targets "
+              f"{next(q['targets'] for q in queue if q['round'] == rnd)}")
+    print(f"  {len(queue)} entries in all, cooldown {cooldown} s after each")
     sync_harness_workspace(commit)
     pipe = item_id(HARNESS_WS, "DataPipeline", PIPELINE)
     body = {"executionData": {"parameters": {"queue": queue, "expected_commit": commit}}}
@@ -129,11 +150,14 @@ def main():
     s.add_argument("variants", nargs="+")
     s.add_argument("--targets", default="F64", help="comma separated: F2,F64,PPU,Pro")
     s.add_argument("--clear-first", action="store_true")
+    s.add_argument("--repeats", type=int, default=1,
+                   help="rounds over the whole list (round robin); F2 is only in the first round")
+    s.add_argument("--cooldown", type=int, default=0, help="seconds to wait after each entry")
     for name in ("status", "collect"):
         sub.add_parser(name).add_argument("job_id")
     a = ap.parse_args()
     if a.cmd == "start":
-        start(a.variants, a.targets, a.clear_first)
+        start(a.variants, a.targets, a.clear_first, a.repeats, a.cooldown)
     elif a.cmd == "status":
         status(a.job_id)
     else:

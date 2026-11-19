@@ -1,6 +1,6 @@
 {
   "properties": {
-    "description": "Started by harness/run_queue.py. Each queue entry is one notebook run: variant, targets, data_tag, source_type, clear_first, deploy_pro, task. Sequential, so only one refresh runs at a time; a failed entry does not stop the next one.",
+    "description": "Started by harness/run_queue.py. Each queue entry is one notebook run: variant, targets, data_tag, source_type, clear_first, deploy_pro, task, cooldown_seconds. Sequential, so only one refresh runs at a time; a failed entry does not stop the next one. After each entry the pipeline waits cooldown_seconds.",
     "activities": [
       {
         "type": "ForEach",
@@ -98,6 +98,24 @@
               },
               "name": "refresh-harness",
               "dependsOn": []
+            },
+            {
+              "name": "Cooldown",
+              "type": "Wait",
+              "dependsOn": [
+                {
+                  "activity": "refresh-harness",
+                  "dependencyConditions": [
+                    "Completed"
+                  ]
+                }
+              ],
+              "typeProperties": {
+                "waitTimeInSeconds": {
+                  "value": "@max(1, item().cooldown_seconds)",
+                  "type": "Expression"
+                }
+              }
             }
           ]
         },
