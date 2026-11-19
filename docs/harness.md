@@ -9,6 +9,10 @@ The harness runs one variant from this repo on the lab capacities and records wh
 | `harness/refresh-harness.Notebook/` | The Fabric notebook (PySpark). Git integration creates it in the F64 workspace, where it runs. |
 | `harness/harness_lake.Lakehouse/` | The Lakehouse for the results, in the F64 workspace. |
 | `harness/run_variant.py` | The local driver. Starts the notebook and pulls its results into the repo. Python standard library only. |
+| `harness/harness-queue.DataPipeline/` | The queue pipeline in the F64 workspace: runs the notebook once per queue entry, one after the other. |
+| `harness/run_queue.py` | Starts a queue, shows its status and collects its results. Only needed at the start and at the end. |
+| `harness/lab_data.Lakehouse/` | The lab data as Delta tables (schemas `data_1m` and `data_10m`), for models with `SourceType` sql. |
+| `harness/load-lakehouse.Notebook/` | Loads the Parquet releases into `lab_data`. Run by hand once. |
 | `results/harness-runs.csv` | One row per refresh, appended by the driver. Never rewritten. |
 | `results/harness/<run id>/` | Run summary (`summary.md`) and the log extracts of that run (`f64-metrics.csv`, `f64-steps.csv`, `f64-failed_steps.csv`). |
 
@@ -54,10 +58,26 @@ If a check fails, the notebook writes a summary with the reason and ends as fail
 | `task` | `refresh` | `refresh`, `queries` (query workload) `xmla` (chosen visual queries through XMLA under a trace) or `sizes` (VertiPaq size of every model in the target workspaces; driver: `run_variant.py all --task sizes --targets F64old,F2,PPU`) |
 | `visuals` | empty | xmla task (`--visuals v20,v18`): visual ids to send; empty means every visual of the pages in `pages` |
 | `clear_first` | `false` | Refresh task (`--clear-first`): run a `clearValues` refresh first, so the model is empty when the full refresh starts |
+| `source_type` | empty | The `SourceType` the model must read back (parquet, parquet-nobuffer, csv, sql). Empty: not checked. Models without the parameter read back parquet |
+| `deploy_pro` | `false` | `true`: before a Pro run, copy the model definition from the F64 workspace (synced from Git) to Pro. The queue sets it; the driver deploys Pro itself |
+| `pipeline_run_id` | empty | Set by the queue pipeline, recorded in every row and in `status.json` |
 
 Every refresh records `size_before_mb`, the model's VertiPaq size in memory just before the full refresh, and `command_limit_mb`, the SKU maximum minus that size. The command memory limit of a refresh is the SKU maximum minus what the model already uses (Chris Webb, "Power BI semantic model memory errors, part 3", 2024), which is what the resource governance errors report as "database size before command execution".
 
 The sizes task reads the storage statistics of every model as it is (data, dictionaries, hierarchies, relationships; VertiPaq Analyzer's Total Size). v00 on 1M read 93 MB right after a refresh and 66 MB a day later with the same data, the difference all in the dictionaries; touching every column first did not change the 66 MB. Each refresh therefore also records `size_after_mb`, the size right after it. DAX Studio on the model just refreshed in Desktop gave 92.7 MB.
+
+## Queue in Fabric
+
+`run_variant.py` waits for each run on this machine, so a network drop or a sleeping laptop stops the queue between runs. The queue pipeline runs the same notebook inside the F64 workspace instead:
+
+1. Commit and push the models as for a single run.
+2. `python harness/run_queue.py start v00-baseline v20-pq-sort --targets F2,F64,PPU,Pro` reads `DataTag` and `SourceType` of each variant from HEAD, checks that HEAD is pushed, brings the F64 workspace up to it and starts `harness-queue` with the list.
+3. The pipeline runs the notebook once per variant, in order, with no retries. A failed or stopped run does not stop the next one. F2 and PPU are updated from Git by the notebook as before; Pro gets the model from the F64 workspace (`deploy_pro`).
+4. `python harness/run_queue.py status JOB_ID` shows the pipeline and the runs that finished. `python harness/run_queue.py collect JOB_ID` pulls the finished runs into the repo like the driver does. It can run while the queue is still going and only adds what is new.
+
+The results stay in `harness_lake` until collected (`refresh_runs` table, `Files/harness/runs/<run id>/`). One queue runs at a time: do not start a second queue, a driver run or a manual refresh of the same models while one is running, and do not push while it runs (the next entry would see a different commit and stop).
+
+To switch the source or the data size of a variant for a queue, change `SourceType` or `DataTag` in its TMDL and commit, as for 1M and 10M below. Never in the service.
 
 ## The xmla task
 

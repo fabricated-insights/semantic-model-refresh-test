@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Lakehouse",
+    "displayName": "lab_data",
+    "description": "The lab data as Delta tables, schema data_1m and data_10m, for models with SourceType sql."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a0e26b68-cd95-4f69-ae82-b43fae0f74bd"
+  }
+}

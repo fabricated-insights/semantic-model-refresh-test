@@ -34,6 +34,9 @@ concurrency = "seq,page"      # queries task: seq sends visuals one by one; page
 repeats = "5"                 # queries task: measured renders per page, mode and concurrency
 clear_first = "false"         # refresh task: "true" runs a clearValues refresh first, so the model is empty when the full refresh starts
 visuals = ""                  # xmla task: comma separated visual ids (v20,v18); empty means every visual of the pages
+source_type = ""              # SourceType committed in the variant's TMDL; the model must read back the same value. Empty: not checked
+deploy_pro = "false"          # "true": copy the model definition from the F64 workspace (synced from Git) to Pro before the run
+pipeline_run_id = ""          # set by the harness-queue pipeline; empty when the driver starts the notebook
 
 # METADATA ********************
 
@@ -175,7 +178,9 @@ def note(msg):
     log_lines.append(line)
 
 
-note(f"run {run_id}: variant={variant} data_tag={data_tag} targets={target_list} expected_commit={expected_commit or '(remote head)'}")
+note(f"run {run_id}: variant={variant} data_tag={data_tag} source_type={source_type or '(not checked)'} "
+     f"targets={target_list} expected_commit={expected_commit or '(remote head)'}"
+     + (f" pipeline_run={pipeline_run_id}" if pipeline_run_id else ""))
 
 # METADATA ********************
 
@@ -268,8 +273,38 @@ def check_model(cap):
     if tags[0] != data_tag:
         raise HarnessStop(f"{cap}: {variant} reads back DataTag={tags[0]}, the run expects {data_tag}. "
                           f"Was the parameter changed in the service? Change it only in TMDL and commit.")
-    note(f"{cap}: {variant} is {dataset_id}, DataTag reads back {tags[0]}")
+    sources = [p.get("currentValue") for p in params if p.get("name") == "SourceType"]
+    # Models from before the SourceType parameter load Parquet with Binary.Buffer, which is what "parquet" means.
+    source_back = sources[0] if sources else "parquet"
+    if source_type and source_back != source_type:
+        raise HarnessStop(f"{cap}: {variant} reads back SourceType={source_back}, the run expects {source_type}. "
+                          f"Change it only in TMDL and commit.")
+    note(f"{cap}: {variant} is {dataset_id}, DataTag reads back {tags[0]}, SourceType {source_back}")
     return dataset_id, tags[0], {p["name"]: p.get("currentValue") for p in params}
+
+
+def deploy_from_f64(cap):
+    """Copy the variant's definition from the F64 workspace, which the queue brought up to the pushed commit,
+    to a workspace without Git (Pro). The same files the local driver deploys from HEAD."""
+    src = find_item(WORKSPACES["F64"], "SemanticModel", variant)
+    r = ok(fab.post(f"v1/workspaces/{WORKSPACES['F64']}/semanticModels/{src}/getDefinition?format=TMDL", lro_wait=True),
+           f"F64: read the definition of {variant}")
+    parts = [p for p in r.json()["definition"]["parts"]
+             if not p["path"].startswith(".pbi/") and p["path"] not in (".platform", "diagramLayout.json")]
+    ws = WORKSPACES[cap]
+    models = ok(fab.get(f"v1/workspaces/{ws}/semanticModels"), f"{cap}: list semantic models").json().get("value", [])
+    hits = [m["id"] for m in models if m["displayName"] == variant]
+    if len(hits) > 1:
+        raise HarnessStop(f"{cap}: semantic model {variant} found {len(hits)} times; remove the extra one by hand first")
+    if hits:
+        ok(fab.post(f"v1/workspaces/{ws}/semanticModels/{hits[0]}/updateDefinition",
+                    json={"definition": {"parts": parts}}, lro_wait=True), f"{cap}: update {variant}")
+        note(f"{cap}: updated {variant} from the F64 workspace ({len(parts)} files)")
+    else:
+        ok(fab.post(f"v1/workspaces/{ws}/semanticModels",
+                    json={"displayName": variant, "definition": {"parts": parts}}, lro_wait=True), f"{cap}: create {variant}")
+        note(f"{cap}: created {variant} from the F64 workspace ({len(parts)} files). Set its data source credentials "
+             f"once by hand if the refresh fails on them.")
 
 # METADATA ********************
 
@@ -658,6 +693,8 @@ ROW_SCHEMA = StructType(
     + [StructField(c, DoubleType()) for c in ["size_before_mb", "command_limit_mb"]]
     + [StructField(c, StringType()) for c in ["clear_first"]]
     + [StructField(c, DoubleType()) for c in ["size_after_mb"]]
+    # Added 2026-11-19: the source the model loaded from, and the queue run that started this notebook.
+    + [StructField(c, StringType()) for c in ["source_type_readback", "pipeline_run_id"]]
 )
 COLUMNS = [f.name for f in ROW_SCHEMA.fields]
 
@@ -700,6 +737,7 @@ def build_row(cap, head, tag_readback, dataset_id, ref, logs):
         "db_size_before_mb": ref["db_size_before_mb"], "refresh_request_id": ref["refresh_request_id"],
         "refresh_start_utc": ref.get("refresh_start") or "", "refresh_end_utc": ref.get("refresh_end") or "",
         "error_text": ref["error_text"], "duration_min": dur(), "metrics_source": "refresh API",
+        "source_type_readback": prepared[cap][3].get("SourceType") or "parquet", "pipeline_run_id": pipeline_run_id,
     })
     met = logs["metrics"]
     if len(met):
@@ -1281,6 +1319,8 @@ try:
         if cap not in WORKSPACES:
             raise HarnessStop(f"unknown target {cap}; known: {', '.join(WORKSPACES)}")
         head = sync_workspace(cap)
+        if cap == "Pro" and deploy_pro.lower() == "true" and task == "refresh":
+            deploy_from_f64(cap)
         dataset_id, tag, params = check_model(cap)
         prepared[cap] = (head, dataset_id, tag, params)
 
@@ -1402,7 +1442,9 @@ if rows:
 for k, frames in query_frames.items():
     if frames:
         write_csv(f"{RUN_DIR}/query-{k}.csv", pd.concat(frames, ignore_index=True))
-write_text(f"{RUN_DIR}/status.json", json.dumps({"run_id": run_id, "stopped": stop_reason, "rows": len(rows)}))
+write_text(f"{RUN_DIR}/status.json", json.dumps({"run_id": run_id, "stopped": stop_reason, "rows": len(rows),
+                                                 "variant": variant, "pipeline_run_id": pipeline_run_id,
+                                                 "notebook_run_id": notebook_run_id}))
 print(summary_text)
 
 if stop_reason:
