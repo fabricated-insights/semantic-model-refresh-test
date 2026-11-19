@@ -3,30 +3,19 @@
     "description": "Started by harness/run_queue.py. Each queue entry is one notebook run: variant, targets, data_tag, source_type, clear_first, deploy_pro, task. Sequential, so only one refresh runs at a time; a failed entry does not stop the next one.",
     "activities": [
       {
-        "name": "Each queue entry",
         "type": "ForEach",
-        "dependsOn": [],
         "typeProperties": {
+          "isSequential": true,
           "items": {
             "value": "@pipeline().parameters.queue",
             "type": "Expression"
           },
-          "isSequential": true,
           "activities": [
             {
-              "name": "refresh-harness",
               "type": "TridentNotebook",
-              "dependsOn": [],
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 0,
-                "retryIntervalInSeconds": 30,
-                "secureOutput": false,
-                "secureInput": false
-              },
               "typeProperties": {
-                "notebookId": "afecc37d-289d-4bd6-874c-1bc6c3b8b73c",
-                "workspaceId": "d3119fe5-cd57-4366-b671-89a3ad82aed5",
+                "notebookId": "f07571d4-a3f1-4397-87df-a8f21cf87f17",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
                 "parameters": {
                   "variant": {
                     "value": {
@@ -99,10 +88,21 @@
                     "type": "string"
                   }
                 }
-              }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "refresh-harness",
+              "dependsOn": []
             }
           ]
-        }
+        },
+        "name": "Each queue entry",
+        "dependsOn": []
       }
     ],
     "parameters": {
