@@ -41,6 +41,7 @@ expression fnLoadParquet =
 		        else if SourceType = "csv" then
 		            // The same data as CSV, in the release data-1m-csv or data-10m-csv, typed as the Parquet files are.
 		            Table.TransformColumnTypes(
+		                Table.RenameColumns(
 		                Table.PromoteHeaders(
 		                    Csv.Document(
 		                        Web.Contents(
@@ -50,6 +51,8 @@ expression fnLoadParquet =
 		                        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
 		                    ),
 		                    [PromoteAllScalars = true]
+		                ),
+		                Record.FieldOrDefault(CsvRenames, Name, {})
 		                ),
 		                Record.Field(CsvTypes, Name),
 		                "en-US"
@@ -68,6 +71,8 @@ expression fnLoadParquet =
 		                    [RelativePath = "fabricated-insights/semantic-model-refresh-test/releases/download/" & (if Tag = null then DataTag else Tag) & "/" & FileName]
 		                )
 		            ),
+		    // The CSV export names two columns differently from the Parquet files.
+		    CsvRenames = [orders = {{"OrderDate", "DT"}}, orderrows = {{"LineNumber", "RowNumber"}}],
 		    CsvTypes = [
 		        currencyexchange = {{"Date", type datetime}, {"FromCurrency", type text}, {"ToCurrency", type text}, {"Exchange", Decimal.Type}},
 		        customer = {{"CustomerKey", Int32.Type}, {"GeoAreaKey", Int32.Type}, {"StartDT", type datetime}, {"EndDT", type datetime}, {"Continent", type text}, {"Gender", type text}, {"Title", type text}, {"GivenName", type text}, {"MiddleInitial", type text}, {"Surname", type text}, {"StreetAddress", type text}, {"City", type text}, {"State", type text}, {"StateFull", type text}, {"ZipCode", type text}, {"Country", type text}, {"CountryFull", type text}, {"Birthday", type datetime}, {"Age", Int32.Type}, {"Occupation", type text}, {"Company", type text}, {"Vehicle", type text}, {"Latitude", Decimal.Type}, {"Longitude", Decimal.Type}},
