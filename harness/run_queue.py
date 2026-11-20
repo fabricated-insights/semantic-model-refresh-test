@@ -134,8 +134,12 @@ def start(variants, targets, clear_first, repeats=1, cooldown=0, once=()):
 
 
 def job(job_id):
-    pipe = item_id(HARNESS_WS, "DataPipeline", PIPELINE)
-    s, _, out = http("GET", f"{FABRIC}/workspaces/{HARNESS_WS}/items/{pipe}/jobs/instances/{job_id}")
+    # A queue started on another pipeline (the source-test copy) records where it runs.
+    rec_file = QUEUES / f"{job_id}.json"
+    rec = json.loads(rec_file.read_text(encoding="utf-8")) if rec_file.exists() else {}
+    ws = rec.get("pipeline_workspace", HARNESS_WS)
+    pipe = rec.get("pipeline_id") or item_id(HARNESS_WS, "DataPipeline", PIPELINE)
+    s, _, out = http("GET", f"{FABRIC}/workspaces/{ws}/items/{pipe}/jobs/instances/{job_id}")
     if s >= 300:
         sys.exit(f"job {job_id}: HTTP {s} {str(out)[:500]}")
     return out
