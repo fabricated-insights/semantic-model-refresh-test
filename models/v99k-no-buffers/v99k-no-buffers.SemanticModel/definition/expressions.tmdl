@@ -5,7 +5,7 @@ expression DataTag = "data-1m-v1" meta [IsParameterQuery=true, List={"data-1m-v1
 	annotation PBI_ResultType = Text
 
 /// Where the data is loaded from: parquet (the files in the release, as measured so far), parquet-nobuffer (the same files without Binary.Buffer), csv (the same data as CSV files in the releases data-1m-csv and data-10m-csv) or sql (the lakehouse lab_data on F64, through its SQL endpoint)
-expression SourceType = "parquet" meta [IsParameterQuery=true, List={"parquet", "parquet-nobuffer", "csv", "sql"}, DefaultValue="parquet", Type="Text", IsParameterQueryRequired=true]
+expression SourceType = "sql" meta [IsParameterQuery=true, List={"parquet", "parquet-nobuffer", "csv", "sql"}, DefaultValue="parquet", Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 319732d5-f071-4e7b-9182-3e3fae18bacf
 
 	annotation PBI_ResultType = Text
