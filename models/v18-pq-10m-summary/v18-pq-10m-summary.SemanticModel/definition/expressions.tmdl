@@ -4,23 +4,74 @@ expression DataTag = "data-1m-v1" meta [IsParameterQuery=true, List={"data-1m-v1
 
 	annotation PBI_ResultType = Text
 
-/// Loads one Parquet file from the GitHub release named by Tag, or by DataTag when Tag is omitted.
+/// Where the data is loaded from: parquet (the files in the release, as measured so far), parquet-nobuffer (the same files without Binary.Buffer) or csv (the same data as CSV files in the releases data-1m-csv and data-10m-csv)
+expression SourceType = "parquet" meta [IsParameterQuery=true, List={"parquet", "parquet-nobuffer", "csv"}, DefaultValue="parquet", Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 8f043939-f433-4ea1-b231-71d04d7c6f4d
+
+	annotation PBI_ResultType = Text
+
+/// Loads one file of the data set named by Tag, or by DataTag when Tag is omitted, from the source named by SourceType.
 /// The base URL is a static literal and everything dynamic is in RelativePath,
 /// so the service can refresh it without a dynamic data source error.
 /// Timestamp columns arrive as UTC datetimezone; the zone is dropped so dates never shift.
 expression fnLoadParquet =
 		(FileName as text, optional Tag as nullable text) as table =>
 		let
-		    Source = Parquet.Document(
-		        Binary.Buffer(
-		            Web.Contents(
-		                "https://github.com",
-		                [RelativePath = "fabricated-insights/semantic-model-refresh-test/releases/download/" & (if Tag = null then DataTag else Tag) & "/" & FileName]
+		    // SourceType "parquet" is the model as measured so far. The other values load the same rows
+		    // from another source; everything after this function is the same for all of them.
+		    Name = Text.BeforeDelimiter(FileName, "."),
+		    UsedTag = (if Tag = null then DataTag else Tag),
+		    Source =
+		        if SourceType = "csv" then
+		            // The same data as CSV, in the release data-1m-csv or data-10m-csv, typed as the Parquet files are.
+		            Table.TransformColumnTypes(
+		                Table.RenameColumns(
+		                Table.PromoteHeaders(
+		                    Csv.Document(
+		                        Web.Contents(
+		                            "https://github.com",
+		                            [RelativePath = "fabricated-insights/semantic-model-refresh-test/releases/download/" & Text.Replace(UsedTag, "-v1", "-csv") & "/" & Name & ".csv"]
+		                        ),
+		                        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+		                    ),
+		                    [PromoteAllScalars = true]
+		                ),
+		                Record.FieldOrDefault(CsvRenames, Name, {})
+		                ),
+		                Record.Field(CsvTypes, Name),
+		                "en-US"
 		            )
-		        )
-		    ),
+		        else if SourceType = "parquet-nobuffer" then
+		            Parquet.Document(
+		                Web.Contents(
+		                    "https://github.com",
+		                    [RelativePath = "fabricated-insights/semantic-model-refresh-test/releases/download/" & (if Tag = null then DataTag else Tag) & "/" & FileName]
+		                )
+		            )
+		        else
+		            Parquet.Document(
+		                Binary.Buffer(
+		                    Web.Contents(
+		                        "https://github.com",
+		                        [RelativePath = "fabricated-insights/semantic-model-refresh-test/releases/download/" & (if Tag = null then DataTag else Tag) & "/" & FileName]
+		                    )
+		                )
+		            ),
+		    // The CSV export names two columns differently from the Parquet files.
+		    CsvRenames = [orders = {{"OrderDate", "DT"}}, orderrows = {{"LineNumber", "RowNumber"}}],
+		    CsvTypes = [
+		        currencyexchange = {{"Date", type datetime}, {"FromCurrency", type text}, {"ToCurrency", type text}, {"Exchange", Decimal.Type}},
+		        customer = {{"CustomerKey", Int32.Type}, {"GeoAreaKey", Int32.Type}, {"StartDT", type datetime}, {"EndDT", type datetime}, {"Continent", type text}, {"Gender", type text}, {"Title", type text}, {"GivenName", type text}, {"MiddleInitial", type text}, {"Surname", type text}, {"StreetAddress", type text}, {"City", type text}, {"State", type text}, {"StateFull", type text}, {"ZipCode", type text}, {"Country", type text}, {"CountryFull", type text}, {"Birthday", type datetime}, {"Age", Int32.Type}, {"Occupation", type text}, {"Company", type text}, {"Vehicle", type text}, {"Latitude", Decimal.Type}, {"Longitude", Decimal.Type}},
+		        date = {{"Date", type datetime}, {"DateKey", type text}, {"Year", Int32.Type}, {"YearQuarter", type text}, {"YearQuarterNumber", Int32.Type}, {"Quarter", type text}, {"YearMonth", type text}, {"YearMonthShort", type text}, {"YearMonthNumber", Int32.Type}, {"Month", type text}, {"MonthShort", type text}, {"MonthNumber", Int32.Type}, {"DayofWeek", type text}, {"DayofWeekShort", type text}, {"DayofWeekNumber", Int32.Type}, {"WorkingDay", Int32.Type}, {"WorkingDayNumber", Int32.Type}},
+		        orderrows = {{"OrderKey", Int64.Type}, {"RowNumber", Int32.Type}, {"ProductKey", Int32.Type}, {"Quantity", Int32.Type}, {"UnitPrice", Decimal.Type}, {"NetPrice", Decimal.Type}, {"UnitCost", Decimal.Type}},
+		        orders = {{"OrderKey", Int64.Type}, {"CustomerKey", Int32.Type}, {"StoreKey", Int32.Type}, {"DT", type datetime}, {"DeliveryDate", type datetime}, {"CurrencyCode", type text}},
+		        product = {{"ProductKey", Int32.Type}, {"ProductCode", type text}, {"ProductName", type text}, {"Manufacturer", type text}, {"Brand", type text}, {"Color", type text}, {"WeightUnit", type text}, {"Weight", Decimal.Type}, {"Cost", Decimal.Type}, {"Price", Decimal.Type}, {"CategoryKey", Int32.Type}, {"CategoryName", type text}, {"SubCategoryKey", Int32.Type}, {"SubCategoryName", type text}},
+		        sales = {{"OrderKey", Int64.Type}, {"LineNumber", Int32.Type}, {"OrderDate", type datetime}, {"DeliveryDate", type datetime}, {"CustomerKey", Int32.Type}, {"StoreKey", Int32.Type}, {"ProductKey", Int32.Type}, {"Quantity", Int32.Type}, {"UnitPrice", Decimal.Type}, {"NetPrice", Decimal.Type}, {"UnitCost", Decimal.Type}, {"CurrencyCode", type text}, {"ExchangeRate", Decimal.Type}},
+		        store = {{"StoreKey", Int32.Type}, {"StoreCode", Int32.Type}, {"GeoAreaKey", Int32.Type}, {"CountryCode", type text}, {"CountryName", type text}, {"State", type text}, {"OpenDate", type datetime}, {"CloseDate", type datetime}, {"Description", type text}, {"SquareMeters", Int32.Type}, {"Status", type text}}
+		    ],
+		    // Only the Parquet timestamps carry a time zone (UTC); CSV skips this step.
 		    ZoneColumns = Table.SelectRows(Table.Schema(Source), each [Kind] = "datetimezone")[Name],
-		    RemovedZones = Table.TransformColumns(
+		    RemovedZones = if SourceType = "csv" then Source else Table.TransformColumns(
 		        Source,
 		        List.Transform(ZoneColumns, (c) => {c, each if _ = null then null else DateTimeZone.RemoveZone(_), type datetime})
 		    )
