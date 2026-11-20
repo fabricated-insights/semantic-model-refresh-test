@@ -79,6 +79,8 @@ The results stay in `harness_lake` until collected (`refresh_runs` table, `Files
 
 `--repeats N` runs the whole list N times, round robin (all models, then all again), so the runs of one model are spread over the queue. F2 is in the first round only: further F2 runs are a separate decision. `--once v19-pq-heavy-10m` keeps a model to the first round, for a failure that repeats the same way. `--cooldown S` waits S seconds after each entry.
 
+Source tests run in their own workspaces, each synced (folder `models`) from a branch where the models carry the `SourceType` switch: `F2-csv` (branch `csv-switch`), `F2-sql` and `F64-NE` (`sql-switch`; F64-NE is a second F64 trial capacity, in North Europe, recorded apart from F64). The harness stays in the F64 workspace and drives them like any target. `run_queue.py start ... --targets F64-NE` pins the commit of that branch and reads `DataTag` and `SourceType` from it; one queue follows one branch. Before each refresh in these workspaces the notebook sets the GitHub source to anonymous and, for `SourceType` sql, binds the SQL source to the shared cloud connection `semantic-model-test-sql` (OAuth, Dani's sign-in). `main` keeps no SQL data source: a `Sql.Database` call makes the service require SQL credentials even when the model reads Parquet.
+
 To switch the source or the data size of a variant for a queue, change `SourceType` or `DataTag` in its TMDL and commit, as for 1M and 10M below. Never in the service.
 
 ## The xmla task

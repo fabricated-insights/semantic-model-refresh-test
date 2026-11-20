@@ -29,28 +29,36 @@ import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from run_variant import (FABRIC, HARNESS_WS, LAKEHOUSE, ONELAKE, ROOT, check_pushed, committed_data_tag,  # noqa: E402
+from run_variant import (FABRIC, HARNESS_WS, LAKEHOUSE, ONELAKE, REMOTE, ROOT, check_pushed,  # noqa: E402
                          download, fabric, git, http, item_id, pull_results, sync_harness_workspace)
 
 PIPELINE = "harness-queue"
 QUEUES = ROOT / "results" / "queues"
 
 
-def committed_source_type(variant):
-    text = git("show", f"HEAD:models/{variant}/{variant}.SemanticModel/definition/expressions.tmdl")
-    m = re.search(r'expression\s+SourceType\s*=\s*"([^"]+)"', text)
-    return m.group(1) if m else "parquet"   # models from before the parameter load Parquet
+# Targets whose workspace follows a branch other than main (source tests). Same map as in the notebook.
+BRANCH_OF = {"F2-csv": "csv-switch", "F2-sql": "sql-switch", "F64-NE": "sql-switch"}
 
 
-def build_queue(variants, targets, repeats, cooldown, clear_first, once=()):
+def committed_params(variant, ref):
+    """DataTag and SourceType of a variant as committed at ref (HEAD for main, the pinned branch commit)."""
+    text = git("show", f"{ref}:models/{variant}/{variant}.SemanticModel/definition/expressions.tmdl")
+    tag = re.search(r'expression\s+DataTag\s*=\s*"([^"]+)"', text)
+    src = re.search(r'expression\s+SourceType\s*=\s*"([^"]+)"', text)
+    if not tag:
+        sys.exit(f"No DataTag in {variant} at {ref}")
+    return tag.group(1), (src.group(1) if src else "parquet")   # models from before the parameter load Parquet
+
+
+def build_queue(variants, targets, repeats, cooldown, clear_first, once=(), ref="HEAD"):
     """Round robin: every variant once, then every variant again, so the repeats of one model are spread
     over the whole queue instead of running back to back. F2 is only in the first round: its result is
     pass or fail, and more F2 runs wait for a decision after the first. Variants in `once` (a failure
     that repeats the same way, such as v19 on Pro) are only in the first round too."""
-    tags = {v: (committed_data_tag(v), committed_source_type(v)) for v in variants}
+    tags = {v: committed_params(v, ref) for v in variants}
     queue = []
     for rnd in range(1, repeats + 1):
-        caps = [t for t in targets if rnd == 1 or t != "F2"]
+        caps = [t for t in targets if rnd == 1 or not t.startswith("F2")]
         if not caps:
             break
         for v in (variants if rnd == 1 else [v for v in variants if v not in once]):
@@ -92,7 +100,18 @@ def start(variants, targets, clear_first, repeats=1, cooldown=0, once=()):
         if rec["commit"] != commit:
             sys.exit(f"Queue {jid} is running at {rec['commit'][:7]}, HEAD is {commit[:7]}. "
                      f"A queue at another commit would update the workspaces under it. Wait for it.")
-    queue = build_queue(variants, targets, repeats, cooldown, clear_first, set(once))
+    # One branch per queue: main, or the branch the source-test targets follow. Its commit is pinned.
+    branches = {BRANCH_OF.get(t, "main") for t in targets}
+    if len(branches) > 1:
+        sys.exit(f"Targets {targets} follow different branches ({', '.join(sorted(branches))}); one queue per branch.")
+    branch = branches.pop()
+    pinned, ref = {"main": commit}, "HEAD"
+    if branch != "main":
+        git("fetch", REMOTE, branch)
+        pinned[branch] = git("rev-parse", f"{REMOTE}/{branch}")
+        ref = pinned[branch]
+        print(f"  targets follow branch {branch}, pinned at {ref[:7]}")
+    queue = build_queue(variants, targets, repeats, cooldown, clear_first, set(once), ref)
     for v in variants:
         q = next(e for e in queue if e["variant"] == v)
         print(f"  {v}: DataTag {q['data_tag']}, SourceType {q['source_type']}")
@@ -102,12 +121,12 @@ def start(variants, targets, clear_first, repeats=1, cooldown=0, once=()):
     print(f"  {len(queue)} entries in all, cooldown {cooldown} s after each")
     sync_harness_workspace(commit)
     pipe = item_id(HARNESS_WS, "DataPipeline", PIPELINE)
-    body = {"executionData": {"parameters": {"queue": queue, "expected_commit": commit}}}
+    body = {"executionData": {"parameters": {"queue": queue, "expected_commit": json.dumps(pinned)}}}
     _, headers, _ = fabric("POST", f"/workspaces/{HARNESS_WS}/items/{pipe}/jobs/instances?jobType=Pipeline", body)
     job_id = headers.get("location").rstrip("/").split("/")[-1]
     QUEUES.mkdir(parents=True, exist_ok=True)
     (QUEUES / f"{job_id}.json").write_text(json.dumps({
-        "job_id": job_id, "commit": commit, "started_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "job_id": job_id, "commit": commit, "pinned": pinned, "started_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "queue": queue}, indent=2) + "\n", encoding="utf-8")
     print(f"Queue started at {commit[:7]}: pipeline job {job_id}, {len(queue)} run(s).")
     print(f"Check it with:   python harness/run_queue.py status {job_id}")

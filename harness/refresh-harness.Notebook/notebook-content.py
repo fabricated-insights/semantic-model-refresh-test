@@ -85,7 +85,19 @@ WORKSPACES = {
     # Pro (shared capacity), 1 GB per model. No XMLA endpoint, no enhanced refresh, no monitoring: the driver
     # deploys the committed model through the Fabric item API, and only the result and the times are recorded.
     "Pro": "d139f636-19c2-47c3-af6e-e3f1ec50c45f",
+    # Source tests (2026-11-20). Each workspace syncs folder models from a branch other than main, where
+    # the models carry the SourceType switch. F2-csv and F2-sql are on the F2 capacity; F64-NE is a second
+    # F64 trial capacity in North Europe (the F64 above is in West Europe), so its runs are kept apart.
+    "F2-csv": "ee71079b-ed25-4ac0-916f-e7df7bcd5ade",
+    "F2-sql": "d4e3a357-5602-42a1-8d7a-1bc929ce84aa",
+    "F64-NE": "f725585e-4ef3-4743-aebb-df514bdd02fb",
 }
+# Git branch of the targets that do not follow main. The queue pins the commit of each branch.
+BRANCH_OF = {"F2-csv": "csv-switch", "F2-sql": "sql-switch", "F64-NE": "sql-switch"}
+# Shared cloud connection (OAuth2, Dani's sign-in) for the lab_data SQL endpoint; models on SourceType sql
+# are bound to it before each refresh.
+SQL_CONNECTION = "01edf307-f2a1-485f-aa86-498ee0dbba29"
+SQL_PATH = "vmxp7jph42futcd3awug4hd2s4-4wprdu2xzvtehntrrgr23avo2u.datawarehouse.fabric.microsoft.com;lab_data"
 NO_GIT = {"F64old", "Pro"}       # targets not synced from Git (F64old: earlier runs only; Pro: deployed by the driver)
 STANDARD_REFRESH = {"Pro"}   # targets without the enhanced refresh API: plain refresh, result from the refresh history
 TRACED = {"PPU"}       # targets measured with an XMLA trace instead of SemanticModelLogs
@@ -95,7 +107,7 @@ LAKEHOUSE_NAME = "harness_lake"
 # monitoring off and on (or a capacity change) recreates it with a new ID.
 # The old experience named it "Monitoring KQL database"; the new one (Monitoring item, 2026-11-11) names it
 # "<workspace>_Monitoring_item_<workspace>_Database". Both have the same SemanticModelLogs table.
-MONITORED = {"F64"}
+MONITORED = {"F64", "F64-NE"}
 _monitoring_db = {}
 
 
@@ -118,7 +130,8 @@ REFRESH_PARALLELISM = 6   # what the manual service refreshes used, so results c
 
 # Per-model refresh memory limits in MB. F2 is the measured limit from the error messages.
 # F16, F32 and F64 are the documented limits (F64 errors showed 25,592 to 25,593 MB).
-LIMITS_MB = {"F2": 3066, "F16": 5120, "F32": 10240, "F64": 25600, "PPU": 102400}
+LIMITS_MB = {"F2": 3066, "F16": 5120, "F32": 10240, "F64": 25600, "PPU": 102400,
+             "F2-csv": 3066, "F2-sql": 3066, "F64-NE": 25600}
 CHANGE_FLAG_PCT = 1.0
 
 fab = fabric.FabricRestClient()
@@ -128,6 +141,13 @@ run_id = harness_run_id or dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%
 target_list = [t.strip() for t in targets.split(",") if t.strip()]
 ctx = notebookutils.runtime.context
 notebook_run_id = str(ctx.get("currentRunId") or ctx.get("activityId") or "")
+# expected_commit is either one commit (main) or, from run_queue.py, a JSON object with the pinned commit of
+# each branch the run's targets follow: {"main": "...", "sql-switch": "..."}.
+_pinned = json.loads(expected_commit) if expected_commit.strip().startswith("{") else {"main": expected_commit}
+
+
+def expected_for(cap):
+    return _pinned.get(BRANCH_OF.get(cap, "main"), "")
 
 
 class HarnessStop(Exception):
@@ -206,15 +226,17 @@ def sync_workspace(cap):
         note(f"{cap}: not connected to Git; the model there was deployed by the driver (Pro) or by hand")
         return ""
     st = None
+    expected = expected_for(cap)   # main, or the branch this target follows (BRANCH_OF)
     # The remote head can take a moment to show a fresh push. Poll, don't sleep blindly.
     for attempt in range(12):
         st = git_status(ws)
-        if not expected_commit or (st.get("remoteCommitHash") or "").startswith(expected_commit):
+        if not expected or (st.get("remoteCommitHash") or "").startswith(expected):
             break
         time.sleep(10)
     remote, head = st.get("remoteCommitHash"), st.get("workspaceHead")
-    if expected_commit and not (remote or "").startswith(expected_commit):
-        raise HarnessStop(f"{cap}: the workspace sees remote commit {remote}, not the pushed {expected_commit}")
+    if expected and not (remote or "").startswith(expected):
+        raise HarnessStop(f"{cap}: the workspace sees remote commit {remote}, not the pinned {expected} "
+                          f"of branch {BRANCH_OF.get(cap, 'main')}")
 
     changes = st.get("changes", [])
     dirty = [c for c in changes if c.get("workspaceChange") not in (None, "None")]
@@ -280,7 +302,32 @@ def check_model(cap):
         raise HarnessStop(f"{cap}: {variant} reads back SourceType={source_back}, the run expects {source_type}. "
                           f"Change it only in TMDL and commit.")
     note(f"{cap}: {variant} is {dataset_id}, DataTag reads back {tags[0]}, SourceType {source_back}")
+    if cap in BRANCH_OF:
+        set_up_sources(cap, dataset_id, source_back)
     return dataset_id, tags[0], {p["name"]: p.get("currentValue") for p in params}
+
+
+def set_up_sources(cap, dataset_id, source_back):
+    """Source-test workspaces only: their models are synced fresh from a branch, so set the credentials the
+    main workspaces got once by hand. GitHub: anonymous. SQL (SourceType sql): bind to the shared cloud
+    connection, which authenticates with Dani's own OAuth sign-in. Repeating either is harmless."""
+    ws = WORKSPACES[cap]
+    srcs = ok(pbi.get(f"v1.0/myorg/groups/{ws}/datasets/{dataset_id}/datasources"),
+              f"{cap}: list data sources").json().get("value", [])
+    for s in srcs:
+        if s.get("datasourceType") == "Web":
+            body = {"credentialDetails": {"credentialType": "Anonymous",
+                                          "credentials": json.dumps({"credentialData": ""}),
+                                          "encryptedConnection": "Encrypted", "encryptionAlgorithm": "None",
+                                          "privacyLevel": "None"}}
+            ok(pbi.patch(f"v1.0/myorg/gateways/{s['gatewayId']}/datasources/{s['datasourceId']}", json=body),
+               f"{cap}: anonymous credential for GitHub")
+    if source_back == "sql":
+        body = {"connectionBinding": {"id": SQL_CONNECTION, "connectivityType": "ShareableCloud",
+                                      "connectionDetails": {"type": "SQL", "path": SQL_PATH}}}
+        ok(fab.post(f"v1/workspaces/{ws}/semanticModels/{dataset_id}/bindConnection", json=body),
+           f"{cap}: bind the SQL source to the shared connection")
+    note(f"{cap}: data sources set up (GitHub anonymous{', SQL bound to the shared connection' if source_back == 'sql' else ''})")
 
 
 def deploy_from_f64(cap):
