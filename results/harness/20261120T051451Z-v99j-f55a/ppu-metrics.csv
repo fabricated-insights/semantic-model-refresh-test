@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+,v99j-buffer-stg-customer,2026-11-20T05:17:53.429Z,2026-11-20T05:34:42.009Z,refreshed,23111.0,22975.0,16.81,2850.0,2600.0,77.0,38422496.0,6.0

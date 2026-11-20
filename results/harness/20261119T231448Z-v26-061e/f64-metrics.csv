@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-19T23:16:23.6926709Z,v26-bad-dax,2026-11-19T23:15:47.979Z,2026-11-19T23:16:23.683Z,refreshed,1016.0,982.0,0.6,56.0,37.0,7.0,2561140,6

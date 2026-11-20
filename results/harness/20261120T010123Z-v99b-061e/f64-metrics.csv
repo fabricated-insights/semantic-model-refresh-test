@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T01:07:53.1314284Z,v99b-one-sales-copy,2026-11-20T01:04:15.065Z,2026-11-20T01:07:53.119Z,failed,25582.0,25530.0,3.63,727.0,724.0,1.0,597095,6

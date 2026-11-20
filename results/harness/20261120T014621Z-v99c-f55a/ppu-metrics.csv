@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+,v99c-crossjoin-only,2026-11-20T01:49:53.177Z,2026-11-20T02:22:51.016Z,refreshed,26157.0,25996.0,32.96,7080.0,6862.0,69.0,35817730.0,6.0

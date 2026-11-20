@@ -14,5 +14,6 @@
       "cooldown_seconds": 0,
       "round": 1
     }
-  ]
+  ],
+  "finished": "Completed"
 }
