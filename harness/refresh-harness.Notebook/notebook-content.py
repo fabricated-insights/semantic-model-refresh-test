@@ -142,8 +142,10 @@ target_list = [t.strip() for t in targets.split(",") if t.strip()]
 ctx = notebookutils.runtime.context
 notebook_run_id = str(ctx.get("currentRunId") or ctx.get("activityId") or "")
 # expected_commit is either one commit (main) or, from run_queue.py, a JSON object with the pinned commit of
-# each branch the run's targets follow: {"main": "...", "sql-switch": "..."}.
+# each branch the run's targets follow: {"main": "...", "sql-switch": "..."}. An optional "branch_of" entry
+# overrides BRANCH_OF for this run, when a workspace has been switched to another branch.
 _pinned = json.loads(expected_commit) if expected_commit.strip().startswith("{") else {"main": expected_commit}
+BRANCH_OF = {**BRANCH_OF, **_pinned.pop("branch_of", {})}
 
 
 def expected_for(cap):

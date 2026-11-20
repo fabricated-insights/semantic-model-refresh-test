@@ -86,7 +86,7 @@ def running_queues():
     return out
 
 
-def start(variants, targets, clear_first, repeats=1, cooldown=0, once=()):
+def start(variants, targets, clear_first, repeats=1, cooldown=0, once=(), branch_override=""):
     for v in list(variants) + list(once):
         if not (ROOT / "models" / v).is_dir():
             sys.exit(f"models/{v} does not exist")
@@ -101,7 +101,7 @@ def start(variants, targets, clear_first, repeats=1, cooldown=0, once=()):
             sys.exit(f"Queue {jid} is running at {rec['commit'][:7]}, HEAD is {commit[:7]}. "
                      f"A queue at another commit would update the workspaces under it. Wait for it.")
     # One branch per queue: main, or the branch the source-test targets follow. Its commit is pinned.
-    branches = {BRANCH_OF.get(t, "main") for t in targets}
+    branches = {branch_override} if branch_override else {BRANCH_OF.get(t, "main") for t in targets}
     if len(branches) > 1:
         sys.exit(f"Targets {targets} follow different branches ({', '.join(sorted(branches))}); one queue per branch.")
     branch = branches.pop()
@@ -111,6 +111,8 @@ def start(variants, targets, clear_first, repeats=1, cooldown=0, once=()):
         pinned[branch] = git("rev-parse", f"{REMOTE}/{branch}")
         ref = pinned[branch]
         print(f"  targets follow branch {branch}, pinned at {ref[:7]}")
+    if branch_override:   # the workspace was switched to another branch than BRANCH_OF says
+        pinned["branch_of"] = {t: branch_override for t in targets}
     queue = build_queue(variants, targets, repeats, cooldown, clear_first, set(once), ref)
     for v in variants:
         q = next(e for e in queue if e["variant"] == v)
@@ -203,12 +205,13 @@ def main():
                    help="rounds over the whole list (round robin); F2 is only in the first round")
     s.add_argument("--cooldown", type=int, default=0, help="seconds to wait after each entry")
     s.add_argument("--once", default="", help="comma separated variants that run in the first round only")
+    s.add_argument("--branch", default="", help="branch the target workspaces follow, if not the one in BRANCH_OF")
     for name in ("status", "collect"):
         sub.add_parser(name).add_argument("job_id")
     a = ap.parse_args()
     if a.cmd == "start":
         once = [v.strip() for v in a.once.split(",") if v.strip()]
-        start(a.variants, a.targets, a.clear_first, a.repeats, a.cooldown, once)
+        start(a.variants, a.targets, a.clear_first, a.repeats, a.cooldown, once, a.branch)
     elif a.cmd == "status":
         status(a.job_id)
     else:
