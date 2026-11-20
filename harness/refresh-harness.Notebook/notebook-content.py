@@ -91,9 +91,11 @@ WORKSPACES = {
     "F2-csv": "ee71079b-ed25-4ac0-916f-e7df7bcd5ade",
     "F2-sql": "d4e3a357-5602-42a1-8d7a-1bc929ce84aa",
     "F64-NE": "f725585e-4ef3-4743-aebb-df514bdd02fb",
+    # Same F64 trial capacity as F64-NE (North Europe), branch csv-switch: CSV against Parquet on one capacity.
+    "F64-NE-csv": "092974c1-91c2-48d5-b7f4-10b334e71287",
 }
 # Git branch of the targets that do not follow main. The queue pins the commit of each branch.
-BRANCH_OF = {"F2-csv": "csv-switch", "F2-sql": "sql-switch", "F64-NE": "sql-switch"}
+BRANCH_OF = {"F2-csv": "csv-switch", "F2-sql": "sql-switch", "F64-NE": "sql-switch", "F64-NE-csv": "csv-switch"}
 # Shared cloud connection (OAuth2, Dani's sign-in) for the lab_data SQL endpoint; models on SourceType sql
 # are bound to it before each refresh.
 SQL_CONNECTION = "01edf307-f2a1-485f-aa86-498ee0dbba29"
@@ -107,7 +109,7 @@ LAKEHOUSE_NAME = "harness_lake"
 # monitoring off and on (or a capacity change) recreates it with a new ID.
 # The old experience named it "Monitoring KQL database"; the new one (Monitoring item, 2026-11-11) names it
 # "<workspace>_Monitoring_item_<workspace>_Database". Both have the same SemanticModelLogs table.
-MONITORED = {"F64", "F64-NE"}
+MONITORED = {"F64", "F64-NE", "F64-NE-csv"}
 _monitoring_db = {}
 
 
@@ -131,7 +133,7 @@ REFRESH_PARALLELISM = 6   # what the manual service refreshes used, so results c
 # Per-model refresh memory limits in MB. F2 is the measured limit from the error messages.
 # F16, F32 and F64 are the documented limits (F64 errors showed 25,592 to 25,593 MB).
 LIMITS_MB = {"F2": 3066, "F16": 5120, "F32": 10240, "F64": 25600, "PPU": 102400,
-             "F2-csv": 3066, "F2-sql": 3066, "F64-NE": 25600}
+             "F2-csv": 3066, "F2-sql": 3066, "F64-NE": 25600, "F64-NE-csv": 25600}
 CHANGE_FLAG_PCT = 1.0
 
 fab = fabric.FabricRestClient()

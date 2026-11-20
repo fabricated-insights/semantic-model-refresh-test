@@ -37,7 +37,7 @@ QUEUES = ROOT / "results" / "queues"
 
 
 # Targets whose workspace follows a branch other than main (source tests). Same map as in the notebook.
-BRANCH_OF = {"F2-csv": "csv-switch", "F2-sql": "sql-switch", "F64-NE": "sql-switch"}
+BRANCH_OF = {"F2-csv": "csv-switch", "F2-sql": "sql-switch", "F64-NE": "sql-switch", "F64-NE-csv": "csv-switch"}
 
 
 def committed_params(variant, ref):
