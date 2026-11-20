@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+,v99m-baseline-pq,2026-11-20T18:27:38.692Z,2026-11-20T18:28:51.576Z,refreshed,625.0,457.0,1.21,130.0,72.0,14.0,21583972.0,6.0

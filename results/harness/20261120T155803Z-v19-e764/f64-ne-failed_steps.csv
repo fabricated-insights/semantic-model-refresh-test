@@ -1,0 +1,12 @@
+Object,OperationDetailName,Began,Ended,EndStatus
+6fdedc77-c7d5-464b-87f4-07d0759e8c76,TabularSequencePoint,2026-11-20T15:59:28.938076Z,,
+Sales.Sales-4929449f-be0b-48cf-a44e-c644698415ba,TabularRefresh,2026-11-20T15:59:29.0373984Z,,
+PQ Delivery Days.PQ Delivery Days,TabularRefresh,2026-11-20T15:59:29.0556778Z,,
+PQ Customer RFM.PQ Customer RFM,TabularRefresh,2026-11-20T15:59:29.1028653Z,,
+PQ Customer RFM.PQ Customer RFM,ExecuteSql,2026-11-20T15:59:29.8563901Z,,
+PQ Delivery Days.PQ Delivery Days,ExecuteSql,2026-11-20T15:59:29.8682124Z,,
+Sales.Sales-4929449f-be0b-48cf-a44e-c644698415ba,Process,2026-11-20T15:59:35.7138626Z,,
+Sales.Sales-4929449f-be0b-48cf-a44e-c644698415ba,ReadData,2026-11-20T15:59:35.7156999Z,,
+PQ Customer Segments.PQ Customer Segments,TabularRefresh,2026-11-20T15:59:43.3957734Z,,
+PQ Customer Segments.PQ Customer Segments,ExecuteSql,2026-11-20T15:59:43.4616547Z,,
+Model.a7c057d3-ede2-4fdd-812a-d5be2dc1569f,RelationshipBuildPrepare,2026-11-20T15:59:48.9540242Z,,

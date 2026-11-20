@@ -1,0 +1,343 @@
+{
+  "job_id": "e764457e-a202-4642-9ec1-3d3817ced16a",
+  "commit": "eb585e4bb20f00c4f5196dab488d2b31c10568a2",
+  "pinned": {
+    "main": "eb585e4bb20f00c4f5196dab488d2b31c10568a2",
+    "sql-switch": "3da515cabe58b53b303bcc7f0415e6f1f028fa69"
+  },
+  "pipeline_workspace": "a1a434d3-4b0b-46d2-a4a2-147e3aff9e77",
+  "pipeline_id": "689d5dfd-a9d6-4ed6-b4ec-42ff553d1b38",
+  "started_utc": "2026-11-20T12:25:40+00:00",
+  "queue": [
+    {
+      "variant": "v00-baseline",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v99m-baseline-pq",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v99n-text-staging",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v18-pq-10m-summary",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v99q-customer-stats",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v21-pq-group-by",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v20-pq-sort",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v99o-sorts",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v99k-no-buffers",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v19-pq-heavy-10m",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 1
+    },
+    {
+      "variant": "v00-baseline",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v99m-baseline-pq",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v99n-text-staging",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v18-pq-10m-summary",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v99q-customer-stats",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v21-pq-group-by",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v20-pq-sort",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v99o-sorts",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v99k-no-buffers",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v19-pq-heavy-10m",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 2
+    },
+    {
+      "variant": "v00-baseline",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v99m-baseline-pq",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v99n-text-staging",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v18-pq-10m-summary",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v99q-customer-stats",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v21-pq-group-by",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v20-pq-sort",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v99o-sorts",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v99k-no-buffers",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    },
+    {
+      "variant": "v19-pq-heavy-10m",
+      "targets": "F64-NE",
+      "data_tag": "data-1m-v1",
+      "source_type": "sql",
+      "clear_first": "false",
+      "deploy_pro": "false",
+      "task": "refresh",
+      "cooldown_seconds": 0,
+      "round": 3
+    }
+  ]
+}

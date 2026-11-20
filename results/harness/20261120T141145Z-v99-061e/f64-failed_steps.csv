@@ -1,0 +1,9 @@
+Object,OperationDetailName,Began,Ended,EndStatus
+768aac35-6135-47bf-bbb0-c54b0aa43296,TabularSequencePoint,2026-11-20T14:14:40.7163803Z,,
+Sales Flat.Sales Flat,TabularRefresh,2026-11-20T14:14:40.8695113Z,,
+Customer Stats.Customer Stats,TabularRefresh,2026-11-20T14:14:40.890775Z,,
+Sales.Sales-4929449f-be0b-48cf-a44e-c644698415ba,TabularRefresh,2026-11-20T14:14:40.9059468Z,,
+Customer Stats.Customer Stats,ExecuteSql,2026-11-20T14:14:41.0325274Z,,
+Sales.Sales-4929449f-be0b-48cf-a44e-c644698415ba,ExecuteSql,2026-11-20T14:14:41.0499011Z,,
+Sales Flat.Sales Flat,ExecuteSql,2026-11-20T14:14:41.050177Z,,
+Model.a7c057d3-ede2-4fdd-812a-d5be2dc1569f,RelationshipBuildPrepare,2026-11-20T14:14:43.3353342Z,,

@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+,v22-dax-calc-columns,2026-11-20T08:13:27.917Z,2026-11-20T08:14:56.341Z,refreshed,815.0,773.0,1.47,148.0,84.0,14.0,21353868.0,6.0

@@ -1,0 +1,18 @@
+Object,OperationDetailName,DurationSec,CpuSec,Rows
+Product.Product-9730db17-a88f-43ad-b6f2-50ae8a679b18,TabularRefresh,1.0,0.1,0
+Customer.Customer-bee8b62a-fee2-49b8-a0b6-5518e67a2d59,ExecuteSql,0.9,0.0,0
+Product.Product-9730db17-a88f-43ad-b6f2-50ae8a679b18,ExecuteSql,0.8,0.0,0
+Currency Exchange.Currency Exchange-84d00514-3ac1-4a6c-a61b-f2bed7b860be,ExecuteSql,0.8,0.0,0
+Date.Date-44d762f0-a871-4687-b253-096276d9658b,ExecuteSql,0.3,0.0,0
+Product.Product-9730db17-a88f-43ad-b6f2-50ae8a679b18,ReadData,0.1,0.1,2517
+Product.Product-9730db17-a88f-43ad-b6f2-50ae8a679b18,Process,0.1,0.1,0
+<NA>,Rollback,0.0,0.0,
+DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f.DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f,AnalyzeEncodeData,0.0,0.0,0
+DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f.DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f,TabularRefresh,0.0,0.0,0
+DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f.DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f,ReadData,0.0,0.0,1
+DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f.DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f,Process,0.0,0.0,0
+DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f.DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f,CompressSegment,0.0,0.0,0
+Product.Product-9730db17-a88f-43ad-b6f2-50ae8a679b18,CompressSegment,0.0,0.0,0
+Product.Product-9730db17-a88f-43ad-b6f2-50ae8a679b18,AnalyzeEncodeData,0.0,0.0,0
+DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f.DateTableTemplate_bda775d5-d7fb-4133-ac68-c3454dbd392f,VertiPaq,0.0,0.0,0
+Product.Product-9730db17-a88f-43ad-b6f2-50ae8a679b18,VertiPaq,0.0,0.0,0

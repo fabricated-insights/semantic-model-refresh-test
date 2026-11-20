@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T14:39:01.6782609Z,v99c-crossjoin-only,2026-11-20T14:38:29.968Z,2026-11-20T14:39:01.686Z,failed,14510.0,14431.0,0.53,112.0,99.0,7.0,10329373,6

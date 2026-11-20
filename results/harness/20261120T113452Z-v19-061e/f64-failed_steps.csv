@@ -1,0 +1,10 @@
+Object,OperationDetailName,Began,Ended,EndStatus
+5ac4ec23-e684-402f-a53d-9a6e18c4724f,TabularSequencePoint,2026-11-20T11:35:58.435125Z,,
+PQ Basket Pairs.PQ Basket Pairs,TabularRefresh,2026-11-20T11:35:58.4801663Z,,
+PQ Top Products by Year.PQ Top Products by Year,TabularRefresh,2026-11-20T11:35:58.4860354Z,,
+PQ Customer RFM.PQ Customer RFM,TabularRefresh,2026-11-20T11:35:58.5017899Z,,
+PQ Customer RFM.PQ Customer RFM,ExecuteSql,2026-11-20T11:35:58.6591156Z,,
+PQ Basket Pairs.PQ Basket Pairs,ExecuteSql,2026-11-20T11:35:58.6600077Z,,
+PQ Top Products by Year.PQ Top Products by Year,ExecuteSql,2026-11-20T11:35:58.6631898Z,,
+PQ Customer Segments.PQ Customer Segments,TabularRefresh,2026-11-20T11:35:59.4110205Z,,
+PQ Customer Segments.PQ Customer Segments,ExecuteSql,2026-11-20T11:35:59.4364215Z,,

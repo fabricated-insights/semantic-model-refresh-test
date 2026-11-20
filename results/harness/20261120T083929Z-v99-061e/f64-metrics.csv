@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T08:41:12.0759334Z,v99-kitchen-sink,2026-11-20T08:40:38.678Z,2026-11-20T08:41:12.088Z,failed,14702.0,14623.0,0.56,121.0,106.0,8.0,10329373,6

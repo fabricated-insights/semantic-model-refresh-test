@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T13:14:04.3790684Z,v21-pq-group-by,2026-11-20T13:12:39.097Z,2026-11-20T13:14:04.379Z,refreshed,2761.0,2463.0,1.42,221.0,174.0,19.0,3032622,6

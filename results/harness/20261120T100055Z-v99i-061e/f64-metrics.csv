@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T10:04:56.3908357Z,v99i-buffer-stg-sales,2026-11-20T10:04:12.23Z,2026-11-20T10:04:56.379Z,failed,14948.0,14864.0,0.74,153.0,139.0,7.0,10559477,6

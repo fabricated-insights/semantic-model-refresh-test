@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T09:58:38.4386642Z,v99h-staging-buffers,2026-11-20T09:57:28.429Z,2026-11-20T09:58:38.439Z,failed,14286.0,14202.0,1.17,269.0,230.0,21.0,10559477,6

@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T09:39:22.7741288Z,v99d-power-query,2026-11-20T09:22:44.642Z,2026-11-20T09:39:22.768Z,refreshed,16075.0,15967.0,16.64,1816.0,1755.0,13.0,22085043,6

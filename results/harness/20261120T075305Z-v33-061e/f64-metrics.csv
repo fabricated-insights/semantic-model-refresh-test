@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T07:55:30.0656078Z,v33-auto-date-time,2026-11-20T07:54:10.968Z,2026-11-20T07:55:30.056Z,refreshed,613.0,455.0,1.32,129.0,88.0,16.0,2791244,6

@@ -97,7 +97,8 @@ def start(variants, targets, clear_first, repeats=1, cooldown=0, once=(), branch
     for jid, rec, caps in running_queues():
         if caps & set(targets):
             sys.exit(f"Queue {jid} is still running on {', '.join(sorted(caps & set(targets)))}. Wait for it.")
-        if rec["commit"] != commit:
+        # A queue whose targets all follow a branch (source tests) does not depend on main.
+        if rec["commit"] != commit and not caps <= set(BRANCH_OF):
             sys.exit(f"Queue {jid} is running at {rec['commit'][:7]}, HEAD is {commit[:7]}. "
                      f"A queue at another commit would update the workspaces under it. Wait for it.")
     # One branch per queue: main, or the branch the source-test targets follow. Its commit is pinned.

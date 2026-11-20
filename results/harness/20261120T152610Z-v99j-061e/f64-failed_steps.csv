@@ -1,0 +1,13 @@
+Object,OperationDetailName,Began,Ended,EndStatus
+49b9c9d3-9a88-4664-8d54-995932ee7dc2,TabularSequencePoint,2026-11-20T15:29:01.605967Z,,
+Customer Stats.Customer Stats,TabularRefresh,2026-11-20T15:29:01.7860778Z,,
+Customer.Customer-bee8b62a-fee2-49b8-a0b6-5518e67a2d59,TabularRefresh,2026-11-20T15:29:01.8258034Z,,
+Sales.Sales-4929449f-be0b-48cf-a44e-c644698415ba,TabularRefresh,2026-11-20T15:29:01.863426Z,,
+Customer Stats.Customer Stats,ExecuteSql,2026-11-20T15:29:01.9479298Z,,
+Customer.Customer-bee8b62a-fee2-49b8-a0b6-5518e67a2d59,ExecuteSql,2026-11-20T15:29:01.9484449Z,,
+Sales.Sales-4929449f-be0b-48cf-a44e-c644698415ba,ExecuteSql,2026-11-20T15:29:01.9511055Z,,
+Sales Flat.Sales Flat,TabularRefresh,2026-11-20T15:29:02.8412337Z,,
+Sales Flat.Sales Flat,ExecuteSql,2026-11-20T15:29:02.8932555Z,,
+Product Date Grid.Product Date Grid,TabularRefresh,2026-11-20T15:29:03.1742141Z,,
+Product Date Grid.Product Date Grid,Process,2026-11-20T15:29:03.1792965Z,,
+Product Date Grid.Product Date Grid,ReadData,2026-11-20T15:29:03.180642Z,,

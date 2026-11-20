@@ -1,0 +1,2 @@
+Timestamp,Model,TimeStart,TimeEnd,Result,PeakMemMB,MEnginePeakMB,DurationMin,TotalCpuSec,MEngineCpuSec,VertipaqCpuSec,RowsLoaded,RefreshParallelism
+2026-11-20T08:19:17.7998389Z,v35-calc-tables-four-copies,2026-11-20T08:08:58.884Z,2026-11-20T08:19:17.791Z,refreshed,13063.0,1239.0,10.32,1057.0,388.0,283.0,147082700,6
